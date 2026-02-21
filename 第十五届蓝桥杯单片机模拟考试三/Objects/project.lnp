@@ -1,0 +1,11 @@
+".\Objects\main.obj",
+".\Objects\Distrance.obj",
+".\Objects\PCF8591.obj",
+".\Objects\KEY.obj",
+".\Objects\LED.obj",
+".\Objects\LED_Display.obj",
+".\Objects\Timer.obj",
+".\Objects\IIC.obj",
+".\Objects\Delay.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 

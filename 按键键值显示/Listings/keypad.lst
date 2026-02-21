@@ -1,0 +1,148 @@
+C51 COMPILER V9.60.7.0   KEYPAD                                                            11/16/2025 19:57:25 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEYPAD
+OBJECT MODULE PLACED IN .\Objects\keypad.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE keypad.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\ke
+                    -ypad.lst) OBJECT(.\Objects\keypad.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "keypad.h"
+   3          #include "common.h"
+   4          #include "delay.h"
+   5          
+   6          //定义按键的编号
+   7          code unsigned char Key_Num[17] = {
+   8                  0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+   9          };
+  10          
+  11          //按键扫描函数
+  12          unsigned char Key_Scan(){
+  13   1              //扫描第一行
+  14   1              P30 = 0;P31 = 1;P32 = 1;P33 = 1;
+  15   1              if(P44 == 0){
+  16   2                      //延时消抖
+  17   2                      Delay100us();
+  18   2                      //等待按键释放
+  19   2                      while(P44 == 0){
+  20   3                              return Key_Num[4];
+  21   3                      }
+  22   2              }
+  23   1              if(P42 == 0){
+  24   2                      Delay100us();
+  25   2                      while(P42 == 0){
+  26   3                              return Key_Num[8];
+  27   3                      }
+  28   2              }
+  29   1              if(P35 == 0){
+  30   2                      Delay100us();
+  31   2                      while(P35 == 0){
+  32   3                              return Key_Num[12];
+  33   3                      }
+  34   2              }
+  35   1              if(P34 == 0){
+  36   2                      Delay100us();
+  37   2                      while(P34 == 0){
+  38   3                              return Key_Num[16];
+  39   3                      }
+  40   2              }
+  41   1              //扫描第二行
+  42   1              P30 = 1;P31 = 0;P32 = 1;P33 = 1;
+  43   1              if(P44 == 0){
+  44   2                      Delay100us();
+  45   2                      while(P44 == 0){
+  46   3                              return Key_Num[3];
+  47   3                      }
+  48   2              }
+  49   1              if(P42 == 0){
+  50   2                      Delay100us();
+  51   2                      while(P42 == 0){
+  52   3                              return Key_Num[7];
+  53   3                      }
+  54   2              }
+C51 COMPILER V9.60.7.0   KEYPAD                                                            11/16/2025 19:57:25 PAGE 2   
+
+  55   1              if(P35 == 0){
+  56   2                      Delay100us();
+  57   2                      while(P35 == 0){
+  58   3                              return Key_Num[11];
+  59   3                      }
+  60   2              }
+  61   1              if(P34 == 0){
+  62   2                      Delay100us();
+  63   2                      while(P34 == 0){
+  64   3                              return Key_Num[15];
+  65   3                      }
+  66   2              }
+  67   1              //扫描第三行
+  68   1              P30 = 1;P31 = 1;P32 = 0;P33 = 1;
+  69   1              if(P44 == 0){
+  70   2                      Delay100us();
+  71   2                      while(P44 == 0){
+  72   3                              return Key_Num[2];
+  73   3                      }
+  74   2              }
+  75   1              if(P42 == 0){
+  76   2                      Delay100us();
+  77   2                      while(P42 == 0){
+  78   3                              return Key_Num[6];
+  79   3                      }
+  80   2              }
+  81   1              if(P35 == 0){
+  82   2                      Delay100us();
+  83   2                      while(P35 == 0){
+  84   3                              return Key_Num[10];
+  85   3                      }
+  86   2              }
+  87   1              if(P34 == 0){
+  88   2                      Delay100us();
+  89   2                      while(P34 == 0){
+  90   3                              return Key_Num[14];
+  91   3                      }
+  92   2              }
+  93   1              //扫描第四行
+  94   1              P30 = 1;P31 = 1;P32 = 1;P33 = 0;
+  95   1              if(P44 == 0){
+  96   2                      Delay100us();
+  97   2                      while(P44 == 0){
+  98   3                              return Key_Num[1];
+  99   3                      }
+ 100   2              }
+ 101   1              if(P42 == 0){
+ 102   2                      Delay100us();
+ 103   2                      while(P42 == 0){
+ 104   3                              return Key_Num[5];
+ 105   3                      }
+ 106   2              }
+ 107   1              if(P35 == 0){
+ 108   2                      Delay100us();
+ 109   2                      while(P35 == 0){
+ 110   3                              return Key_Num[9];
+ 111   3                      }
+ 112   2              }
+ 113   1              if(P34 == 0){
+ 114   2                      Delay100us();
+ 115   2                      while(P34 == 0){
+ 116   3                              return Key_Num[13];
+C51 COMPILER V9.60.7.0   KEYPAD                                                            11/16/2025 19:57:25 PAGE 3   
+
+ 117   3                      }
+ 118   2              }
+ 119   1              return Key_Num[0];
+ 120   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    271    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,160 @@
+C51 COMPILER V9.60.7.0   UART                                                              01/19/2026 14:25:58 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\Uart.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Uart.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Uart
+                    -.lst) OBJECT(.\Objects\Uart.obj)
+
+line level    source
+
+   1          #include "STC15F2K60S2.h"  
+   2          #define BAUD         9600   // 串口波特率
+   3          #define SYSTEMCLOCK  12000000L  // 系统时钟频率
+   4          
+   5          // 全局接收缓冲区：存储串口接收的8个字符XX:XX:XX
+   6          unsigned char rx_buf[8] = {0};    
+   7          unsigned char rx_cnt = 0;         // 接收字符计数
+   8          bit rx_complete_flag = 0;        // 接收完成标志
+   9          
+  10          // 函数声明
+  11          void system_init(void);                  // 系统初始化(串口+中断)
+  12          void uart_sendstring(unsigned char *str); // 串口发送字符串
+  13          bit parse_time(unsigned char *time_arr);  // 解析时间，格式正确返回1
+  14          void uart_receive_handler(void);         // 串口接收处理逻辑
+  15          unsigned char* get_time_array(void);      // 获取时间数组指针
+  16          
+  17          // 全局定时时间：[0]时, [1]分, [2]秒（供蜂鸣器模块使用）
+  18          unsigned char g_timer_time[3] = {0};
+  19          // 标记定时时间是否已设置（避免未设置时误触发）
+  20          bit timer_time_set = 0;
+  21          
+  22          // 系统初始化函数
+  23          void system_init(void)
+  24          {
+  25   1          // 串口初始化
+  26   1          SCON = 0x50;          // 8位数据,可变波特率,REN=1允许接收
+  27   1          AUXR = 0x40;          // 定时器1使用1T模式(STC15专属)
+  28   1          TMOD = 0x00;          // 定时器1为16位自动重装模式
+  29   1          // 计算定时器1初值(9600波特率)
+  30   1          TL1 = (65536 - (SYSTEMCLOCK / 4 / BAUD));
+  31   1          TH1 = (65536 - (SYSTEMCLOCK / 4 / BAUD)) >> 8;
+  32   1          TR1 = 1;              // 启动定时器1
+  33   1          ES = 1;               // 使能串口中断
+  34   1          EA = 1;               // 使能总中断
+  35   1      }
+  36          
+  37          // 串口接收处理逻辑
+  38          void uart_receive_handler(void)
+  39          {
+  40   1          unsigned char i;
+  41   1          if(rx_complete_flag == 1)  // 检测到完整的时间字符串
+  42   1          {
+  43   2              rx_complete_flag = 0;  // 清空接收完成标志
+  44   2              
+  45   2              // 解析时间到全局定时数组
+  46   2              if(parse_time(g_timer_time) == 1)
+  47   2              {
+  48   3                  timer_time_set = 1; // 标记定时时间已设置
+  49   3              }
+  50   2              // 重置接收缓冲区，准备下次接收
+  51   2              rx_cnt = 0;
+  52   2              for(i=0; i<8; i++) rx_buf[i] = 0;
+  53   2          }
+  54   1      }
+C51 COMPILER V9.60.7.0   UART                                                              01/19/2026 14:25:58 PAGE 2   
+
+  55          
+  56          // 返回定时时间数组指针
+  57          unsigned char* get_time_array(void)
+  58          {
+  59   1          return g_timer_time;
+  60   1      }
+  61          
+  62          // 解析时间字符串：rx_buf的"XX:XX:XX"转为数值存入time_arr
+  63          bit parse_time(unsigned char *time_arr)
+  64          {
+  65   1          unsigned char i;
+  66   1          // 1. 校验格式：第3位和第6位必须是':'
+  67   1          if(rx_buf[2] != ':' || rx_buf[5] != ':')
+  68   1          {
+  69   2              return 0;
+  70   2          }
+  71   1          
+  72   1          // 2. 校验字符是否为数字(0-9)
+  73   1          for(i=0; i<8; i++)
+  74   1          {
+  75   2              if(i == 2 || i == 5) continue; // 跳过冒号
+  76   2              if(rx_buf[i] < '0' || rx_buf[i] > '9')
+  77   2              {
+  78   3                  return 0; // 非数字字符，格式错误
+  79   3              }
+  80   2          }
+  81   1          
+  82   1          // 3. 字符转数值：时、分、秒
+  83   1          time_arr[0] = (rx_buf[0] - '0') * 10 + (rx_buf[1] - '0');  // 小时
+  84   1          time_arr[1] = (rx_buf[3] - '0') * 10 + (rx_buf[4] - '0');  // 分钟
+  85   1          time_arr[2] = (rx_buf[6] - '0') * 10 + (rx_buf[7] - '0');  // 秒
+  86   1          
+  87   1          // 4. 校验数值范围
+  88   1          if(time_arr[0] > 23 || time_arr[1] > 59 || time_arr[2] > 59)
+  89   1          {
+  90   2              return 0; // 时间值超出范围
+  91   2          }
+  92   1          
+  93   1          return 1; // 解析成功
+  94   1      }
+  95          
+  96          // 串口中断服务函数
+  97          void isr_uart(void) interrupt 4
+  98          {
+  99   1          unsigned char i;
+ 100   1          if(RI)
+ 101   1          {
+ 102   2              RI = 0;  // 清接收中断标志
+ 103   2              if(rx_cnt < 8)  // 只接收8个字符(XX:XX:XX)
+ 104   2              {
+ 105   3                  rx_buf[rx_cnt] = SBUF;  // 存储接收字符
+ 106   3                  rx_cnt++;               // 计数+1
+ 107   3                  if(rx_cnt == 8)         // 8个字符接收完成
+ 108   3                  {
+ 109   4                      rx_complete_flag = 1;    // 置接收完成标志
+ 110   4                  }
+ 111   3              }
+ 112   2              else
+ 113   2              {
+ 114   3                  // 超出8个字符，重置缓冲区
+ 115   3                  rx_cnt = 0;
+ 116   3                  for(i=0; i<8; i++) rx_buf[i] = 0;
+C51 COMPILER V9.60.7.0   UART                                                              01/19/2026 14:25:58 PAGE 3   
+
+ 117   3              }
+ 118   2          }
+ 119   1      }
+ 120          
+ 121          // 串口发送字符串
+ 122          void uart_sendstring(unsigned char *str)
+ 123          {
+ 124   1          unsigned char *p = str;
+ 125   1          while(*p != '\0')  // 遍历字符串直到结束符
+ 126   1          {
+ 127   2              SBUF = *p;     // 写入当前字符到发送寄存器
+ 128   2              while(TI == 0); // 等待发送完成
+ 129   2              TI = 0;        // 清发送中断标志
+ 130   2              p++;           // 指向下一个字符
+ 131   2          }
+ 132   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    283    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     12    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

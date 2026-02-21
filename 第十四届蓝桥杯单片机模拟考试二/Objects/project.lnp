@@ -1,0 +1,15 @@
+".\Objects\main.obj",
+".\Objects\Uart.obj",
+".\Objects\DS18B20.obj",
+".\Objects\PCF8591.obj",
+".\Objects\Relay.obj",
+".\Objects\Beep.obj",
+".\Objects\LED.obj",
+".\Objects\LED_Display.obj",
+".\Objects\Timer.obj",
+".\Objects\Delay.obj",
+".\Objects\IIC.obj",
+".\Objects\Onewire.obj",
+".\Objects\KEY.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 

@@ -1,0 +1,110 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/20/2026 18:55:14 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Common.h"
+   3          #include "Delay.h"
+   4          #include "DS18B20.h"
+   5          #include "PCF8591.h"
+   6          #include "KEY.h"
+   7          #include "Uart.h"
+   8          
+   9          code unsigned char SEG_Table[] = {
+  10              0xC0,   //0
+  11              0xF9,   //1
+  12              0xA4,   //2
+  13              0xB0,   //3
+  14              0x99,   //4
+  15              0x92,   //5
+  16              0x82,   //6
+  17              0xF8,   //7
+  18              0x80,   //8
+  19              0x90,   //9
+  20              0xC1,   //U
+  21              0xFF    //全灭
+  22          };
+  23          
+  24          unsigned char Temp_dat_arr[] = {10,1,11,11,11,11,11,11};
+  25          unsigned char ADC_dat_arr[] = {10,2,11,11,11,11,11,11};
+  26          unsigned char LED_dat_arr[] = {11,11,11,11,11,11,11,11};
+  27          
+  28          void Temp_Display(){
+  29   1          if(temp_value >= 100){
+  30   2              Temp_dat_arr[5] = temp_value / 100;
+  31   2              Temp_dat_arr[6] = temp_value % 100 / 10;
+  32   2              Temp_dat_arr[7] = temp_value % 10;
+  33   2          }
+  34   1          else if(temp_value >= 10 && temp_value < 100){
+  35   2              Temp_dat_arr[5] = 11;
+  36   2              Temp_dat_arr[6] = temp_value % 100 / 10;
+  37   2              Temp_dat_arr[7] = temp_value % 10;
+  38   2          }
+  39   1          else if(temp_value >= 0 && temp_value < 10){
+  40   2              Temp_dat_arr[5] = 11;
+  41   2              Temp_dat_arr[6] = 0;
+  42   2              Temp_dat_arr[7] = temp_value;
+  43   2          }
+  44   1      }
+  45          
+  46          void ADC_Display(){
+  47   1          ADC_dat_arr[5] = ADC_value / 100;
+  48   1          ADC_dat_arr[6] = ADC_value % 100 / 10;
+  49   1          ADC_dat_arr[7] = ADC_value % 10;
+  50   1      }
+  51          
+  52          void LED_Display_Choose(){
+  53   1          unsigned char i;
+  54   1          if(recv_value == 'A'){
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/20/2026 18:55:14 PAGE 2   
+
+  55   2              for(i = 0;i < 8;i++){
+  56   3                  LED_dat_arr[i] = Temp_dat_arr[i];
+  57   3              }
+  58   2          }
+  59   1          if(recv_value == 'B'){
+  60   2              for(i = 0;i < 8;i++){
+  61   3                  LED_dat_arr[i] = ADC_dat_arr[i];
+  62   3              }
+  63   2          }
+  64   1      }
+  65          
+  66          void LED_Display_Show(){
+  67   1          unsigned char dat;
+  68   1          unsigned char com;
+  69   1          for(com = 0;com < 8;com++){
+  70   2              SEG(0xFF);
+  71   2              COM(1<<com);
+  72   2              dat = SEG_Table[LED_dat_arr[com]];
+  73   2              if(recv_value == 'A' && com == 6){
+  74   3                  dat &= 0x7F;
+  75   3              }
+  76   2              if(recv_value == 'B' && com == 5){
+  77   3                  dat &= 0x7F;
+  78   3              }
+  79   2              SEG(dat);
+  80   2              Delay50us();
+  81   2          }
+  82   1          SEG(0xFF);
+  83   1          COM(0xFF);
+  84   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    353    ----
+   CONSTANT SIZE    =     12    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     24       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,37 @@
+#include <STC15F2K60S2.H>
+#include "Timer.h"
+#include "Delay.h"
+
+sbit TX = P1^0;
+sbit RX = P1^1;
+
+int sound_dat = 0; 
+
+unsigned char Distance_Read(){
+    int sound;
+    unsigned char i;
+    CMOD = 0x01;
+    CCON = 0x00;    
+    CH = 0x00;
+    CL = 0x00;
+    for(i = 0;i < 8;i++){
+        TX = 1;
+        Delay12us();
+        TX = 0;
+        Delay12us();
+    }
+    CR = 1;
+    while((RX == 1) && (CH <= 0x40));
+    CR = 0;
+    if(CH > 0x40){
+        return 0;
+    }
+    sound = (CH<<8) | CL;
+    return sound * 0.0172;
+}
+
+void Distance_login(){
+    if(sound_cnt == 199){
+        sound_dat = Distance_Read();
+    }
+}

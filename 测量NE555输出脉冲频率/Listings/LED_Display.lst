@@ -1,0 +1,263 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/16/2026 19:30:07 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "DS1302.h"
+   3          #include "KEY.h"
+   4          #include "NE555.h"
+   5          #include "Delay.h"
+   6          #include "Common.h"
+   7          
+   8          code unsigned char SEG_Table[] = {
+   9              0xC0,   //0
+  10              0xF9,   //1
+  11              0xA4,   //2
+  12              0xB0,   //3
+  13              0x99,   //4
+  14              0x92,   //5
+  15              0x82,   //6
+  16              0xF8,   //7
+  17              0x80,   //8
+  18              0x90,   //9
+  19              0xBF,   //-
+  20              0x8E,   //F
+  21              0x8C,   //P
+  22              0x89,   //H
+  23              0x88,   //A
+  24              0xFF,   //全灭
+  25              0xC7    //L
+  26          };
+  27          unsigned char Freq_dat_arr[] = {11,15,15,15,15,15,15,15};   //频率
+  28          unsigned char Para_dat_arr[] = {12,1,15,15,15,15,15,15};    //参数
+  29          unsigned char Cali_dat_arr[] = {12,2,15,15,15,15,15,15};    //校准
+  30          unsigned char Time_dat_arr[] = {15,15,10,15,15,10,15,15};   //时间
+  31          unsigned char Freq_max_arr[] = {13,11,15,15,15,15,15,15};   //HF
+  32          unsigned char Time_max_arr[] = {13,14,15,15,15,15,15,15};   //HA
+  33          unsigned char LED_dat_arr[] = {15,15,15,15,15,15,15,15};   
+  34          unsigned char time_max_cache[6];
+  35          
+  36          void Freq_dat_Display(){
+  37   1          if(NE555_now >= 10000){
+  38   2              Freq_dat_arr[3] = NE555_now / 10000;
+  39   2              Freq_dat_arr[4] = NE555_now % 10000 / 1000;
+  40   2              Freq_dat_arr[5] = NE555_now % 1000 / 100;
+  41   2              Freq_dat_arr[6] = NE555_now % 100 / 10;
+  42   2              Freq_dat_arr[7] = NE555_now % 10;
+  43   2          }
+  44   1          else if(NE555_now >= 1000 && NE555_now < 10000){
+  45   2              Freq_dat_arr[3] = 15;
+  46   2              Freq_dat_arr[4] = NE555_now / 1000;
+  47   2              Freq_dat_arr[5] = NE555_now % 1000 / 100;
+  48   2              Freq_dat_arr[6] = NE555_now % 100 / 10;
+  49   2              Freq_dat_arr[7] = NE555_now % 10;
+  50   2          }
+  51   1          else if(NE555_now >= 100 && NE555_now < 1000){
+  52   2              Freq_dat_arr[3] = 15;
+  53   2              Freq_dat_arr[4] = 15;
+  54   2              Freq_dat_arr[5] = NE555_now / 100;
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/16/2026 19:30:07 PAGE 2   
+
+  55   2              Freq_dat_arr[6] = NE555_now % 100 / 10;
+  56   2              Freq_dat_arr[7] = NE555_now % 10;
+  57   2          }
+  58   1          else if(NE555_now >= 10 && NE555_now < 100){
+  59   2              Freq_dat_arr[3] = 15;
+  60   2              Freq_dat_arr[4] = 15;
+  61   2              Freq_dat_arr[5] = 15;
+  62   2              Freq_dat_arr[6] = NE555_now / 10;
+  63   2              Freq_dat_arr[7] = NE555_now % 10;
+  64   2          }
+  65   1          else if(NE555_now >= 0 && NE555_now < 10){
+  66   2              Freq_dat_arr[3] = 15;
+  67   2              Freq_dat_arr[4] = 15;
+  68   2              Freq_dat_arr[5] = 15;
+  69   2              Freq_dat_arr[6] = 15;
+  70   2              Freq_dat_arr[7] = NE555_now;
+  71   2          }
+  72   1          else if(NE555_now < 0){
+  73   2              Freq_dat_arr[3] = 15;
+  74   2              Freq_dat_arr[4] = 15;
+  75   2              Freq_dat_arr[5] = 15;
+  76   2              Freq_dat_arr[6] = 16;
+  77   2              Freq_dat_arr[7] = 16;
+  78   2          }
+  79   1      }
+  80          
+  81          void Para_dat_Display(){
+  82   1          Para_dat_arr[4] = NE555_PF / 1000;
+  83   1          Para_dat_arr[5] = NE555_PF % 1000 / 100;
+  84   1          Para_dat_arr[6] = NE555_PF % 100 / 10;
+  85   1          Para_dat_arr[7] = NE555_PF % 10;
+  86   1      }
+  87          
+  88          void Cali_dat_Display(){
+  89   1          int dat = (-1) * NE555_cali;
+  90   1          if(NE555_cali > 0){
+  91   2              Cali_dat_arr[4] = 15;
+  92   2              Cali_dat_arr[5] = NE555_cali / 100;
+  93   2              Cali_dat_arr[6] = NE555_cali % 100 / 10;
+  94   2              Cali_dat_arr[7] = NE555_cali % 10;
+  95   2          }
+  96   1          else if(NE555_cali == 0){
+  97   2              Cali_dat_arr[4] = 15;
+  98   2              Cali_dat_arr[5] = 15;
+  99   2              Cali_dat_arr[6] = 15;
+ 100   2              Cali_dat_arr[7] = 0;
+ 101   2          }
+ 102   1          else{
+ 103   2              Cali_dat_arr[4] = 10;
+ 104   2              Cali_dat_arr[5] = dat / 100;
+ 105   2              Cali_dat_arr[6] = dat % 100 / 10;
+ 106   2              Cali_dat_arr[7] = dat % 10;
+ 107   2          }
+ 108   1      }
+ 109          
+ 110          void Time_dat_Display(){
+ 111   1          Time_dat_arr[0] = time_value[0];
+ 112   1          Time_dat_arr[1] = time_value[1];
+ 113   1          Time_dat_arr[2] = 10;
+ 114   1          Time_dat_arr[3] = time_value[2];
+ 115   1          Time_dat_arr[4] = time_value[3];
+ 116   1          Time_dat_arr[5] = 10;
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/16/2026 19:30:07 PAGE 3   
+
+ 117   1          Time_dat_arr[6] = time_value[4];
+ 118   1          Time_dat_arr[7] = time_value[5];
+ 119   1      }
+ 120          
+ 121          void Freq_max_Display(){
+ 122   1          if(NE555_now > NE555_max && NE555_now >= 0){
+ 123   2                      unsigned char *rtc_ptr = ReadRTC();
+ 124   2              NE555_max = NE555_now;
+ 125   2              time_max_cache[0] = rtc_ptr[0];
+ 126   2              time_max_cache[1] = rtc_ptr[1];
+ 127   2              time_max_cache[2] = rtc_ptr[2];
+ 128   2              time_max_cache[3] = rtc_ptr[3];
+ 129   2              time_max_cache[4] = rtc_ptr[4];
+ 130   2              time_max_cache[5] = rtc_ptr[5];
+ 131   2              time_max = time_max_cache;
+ 132   2          }
+ 133   1          if(NE555_max >= 10000){
+ 134   2              Freq_max_arr[3] = NE555_max / 10000;
+ 135   2              Freq_max_arr[4] = NE555_max % 10000 / 1000;
+ 136   2              Freq_max_arr[5] = NE555_max % 1000 / 100;
+ 137   2              Freq_max_arr[6] = NE555_max % 100 / 10;
+ 138   2              Freq_max_arr[7] = NE555_max % 10;
+ 139   2          }
+ 140   1          else if(NE555_max >= 1000 && NE555_max < 10000){
+ 141   2              Freq_max_arr[3] = 15;
+ 142   2              Freq_max_arr[4] = NE555_max / 1000;
+ 143   2              Freq_max_arr[5] = NE555_max % 1000 / 100;
+ 144   2              Freq_max_arr[6] = NE555_max % 100 / 10;
+ 145   2              Freq_max_arr[7] = NE555_max % 10;
+ 146   2          }
+ 147   1          else if(NE555_max >= 100 && NE555_max < 1000){
+ 148   2              Freq_max_arr[3] = 15;
+ 149   2              Freq_max_arr[4] = 15;
+ 150   2              Freq_max_arr[5] = NE555_max / 100;
+ 151   2              Freq_max_arr[6] = NE555_max % 100 / 10;
+ 152   2              Freq_max_arr[7] = NE555_max % 10;
+ 153   2          }
+ 154   1          else if(NE555_max >= 10 && NE555_max < 100){
+ 155   2              Freq_max_arr[3] = 15;
+ 156   2              Freq_max_arr[4] = 15;
+ 157   2              Freq_max_arr[5] = 15;
+ 158   2              Freq_max_arr[6] = NE555_max / 10;
+ 159   2              Freq_max_arr[7] = NE555_max % 10;
+ 160   2          }
+ 161   1          else if(NE555_max >= 0 && NE555_max < 10){
+ 162   2              Freq_max_arr[3] = 15;
+ 163   2              Freq_max_arr[4] = 15;
+ 164   2              Freq_max_arr[5] = 15;
+ 165   2              Freq_max_arr[6] = 15;
+ 166   2              Freq_max_arr[7] = NE555_max;
+ 167   2          }
+ 168   1      }
+ 169          
+ 170          void Time_max_Display(){
+ 171   1          Time_max_arr[2] = time_max[0];
+ 172   1          Time_max_arr[3] = time_max[1];
+ 173   1          Time_max_arr[4] = time_max[2];
+ 174   1          Time_max_arr[5] = time_max[3];
+ 175   1          Time_max_arr[6] = time_max[4];
+ 176   1          Time_max_arr[7] = time_max[5];
+ 177   1      }
+ 178          
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/16/2026 19:30:07 PAGE 4   
+
+ 179          void LED_Display_Choose(){
+ 180   1          unsigned char i;
+ 181   1          if(S4_cnt % 4 == 0){
+ 182   2              Freq_dat_Display();
+ 183   2              for(i = 0;i < 8;i++){
+ 184   3                  LED_dat_arr[i] = Freq_dat_arr[i];
+ 185   3              }
+ 186   2          }
+ 187   1          if(S4_cnt % 4 == 1 && S5_para_cnt % 2 == 0){
+ 188   2              Para_dat_Display();
+ 189   2              for(i = 0;i < 8;i++){
+ 190   3                  LED_dat_arr[i] = Para_dat_arr[i];
+ 191   3              }
+ 192   2          }
+ 193   1          if(S4_cnt % 4 == 1 && S5_para_cnt % 2 == 1){
+ 194   2              Cali_dat_Display();
+ 195   2              for(i = 0;i < 8;i++){
+ 196   3                  LED_dat_arr[i] = Cali_dat_arr[i];
+ 197   3              }
+ 198   2          }
+ 199   1          if(S4_cnt % 4 == 2){
+ 200   2              Time_dat_Display();
+ 201   2              for(i = 0;i < 8;i++){
+ 202   3                  LED_dat_arr[i] = Time_dat_arr[i];
+ 203   3              }
+ 204   2          }
+ 205   1          if(S4_cnt % 4 == 3 && S5_echo_cnt % 2 == 0){
+ 206   2              Freq_max_Display();
+ 207   2              for(i = 0;i < 8;i++){
+ 208   3                  LED_dat_arr[i] = Freq_max_arr[i];
+ 209   3              }
+ 210   2          }
+ 211   1          if(S4_cnt % 4 == 3 && S5_echo_cnt % 2 == 1){
+ 212   2              Time_max_Display();
+ 213   2              for(i = 0;i < 8;i++){
+ 214   3                  LED_dat_arr[i] = Time_max_arr[i];
+ 215   3              }
+ 216   2          }
+ 217   1      }
+ 218          
+ 219          void LED_Display_Show(){
+ 220   1          unsigned char com;
+ 221   1          unsigned char dat;
+ 222   1          for(com = 0;com < 8;com++){
+ 223   2              SEG(0xFF);
+ 224   2              COM(1<<com);
+ 225   2              dat = SEG_Table[LED_dat_arr[com]];
+ 226   2              SEG(dat);
+ 227   2              Delay50us();
+ 228   2          }
+ 229   1          SEG(0xFF);
+ 230   1          COM(0xFF);
+ 231   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1316    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     62       5
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/16/2026 19:30:07 PAGE 5   
+
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

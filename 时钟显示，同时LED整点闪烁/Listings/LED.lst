@@ -1,0 +1,30 @@
+C51 COMPILER V9.60.7.0   LED                                                               01/18/2026 22:32:28 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN .\Objects\LED.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LED.l
+                    -st) OBJECT(.\Objects\LED.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "LED.h"
+   3          
+   4          //创建LED显示数组
+   5          code unsigned char LED_Value[1] = {0xFE};
+   6          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =      1    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,9 @@
+".\Objects\main.obj",
+".\Objects\LED_Display.obj",
+".\Objects\LED.obj",
+".\Objects\KEY.obj",
+".\Objects\DS1302.obj",
+".\Objects\Delay.obj",
+".\Objects\E2PROM.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 

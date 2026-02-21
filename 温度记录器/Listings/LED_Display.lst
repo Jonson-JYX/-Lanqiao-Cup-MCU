@@ -1,0 +1,124 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/27/2026 12:55:38 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Delay.h"
+   3          #include "Common.h"
+   4          #include "DS18B20.h"
+   5          
+   6          //数码管段码表
+   7          code unsigned char SEG_Table[] = {
+   8                  0xC0,   //0
+   9                  0xF9,   //1
+  10                  0xA4,   //2
+  11                  0xB0,   //3
+  12                  0x99,   //4
+  13                  0x92,   //5
+  14                  0x82,   //6
+  15                  0xF8,   //7
+  16                  0x80,   //8
+  17                  0x90,   //9
+  18                  0xFF,   //全灭
+  19          };
+  20          
+  21          //记录当前温度
+  22          unsigned char Temp_Now = 0;
+  23          //记录最小温度
+  24          unsigned char Temp_Min = 99;
+  25          //记录最大温度
+  26          unsigned char Temp_Max = 0;
+  27          
+  28          //温度临时存储数组
+  29          unsigned char Temp_Value_Arr[] = {10,10,10,10,10,10,10,10};
+  30          //温度显示数组
+  31          unsigned char Temp_Dat_Arr[] = {10,10,10,10,10,10,10,10};
+  32          
+  33          //温度转化函数
+  34          void Temp_Change(){
+  35   1              float temp = Temp_Value();
+  36   1              unsigned int temp_value = (unsigned int)(temp);
+  37   1              unsigned char i;
+  38   1              if(temp_value > Temp_Max){
+  39   2                      Temp_Max = temp_value;
+  40   2              }
+  41   1              if(temp_value < Temp_Min){
+  42   2                      Temp_Min = temp_value;
+  43   2              }
+  44   1              if(temp_value >= 10){
+  45   2                      Temp_Value_Arr[0] = temp_value / 10;
+  46   2                      Temp_Value_Arr[1] = temp_value % 10;
+  47   2              }
+  48   1              if(temp_value < 10){
+  49   2                      Temp_Value_Arr[0] = 10;
+  50   2                      Temp_Value_Arr[1] = temp_value % 10;
+  51   2              }
+  52   1              if(Temp_Min >= 10){
+  53   2                      Temp_Value_Arr[3] = Temp_Min / 10;
+  54   2                      Temp_Value_Arr[4] = Temp_Min % 10;
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/27/2026 12:55:38 PAGE 2   
+
+  55   2              }
+  56   1              if(Temp_Min < 10){
+  57   2                      Temp_Value_Arr[3] = 10;
+  58   2                      Temp_Value_Arr[4] = Temp_Min % 10;
+  59   2              }
+  60   1              if(Temp_Max >= 10){
+  61   2                      Temp_Value_Arr[6] = Temp_Max / 10;
+  62   2                      Temp_Value_Arr[7] = Temp_Max % 10;
+  63   2              }
+  64   1              if(Temp_Max < 10){
+  65   2                      Temp_Value_Arr[6] = 10;
+  66   2                      Temp_Value_Arr[7] = Temp_Max % 10;
+  67   2              }
+  68   1              
+  69   1              for(i = 0;i < 8;i++){
+  70   2                      Temp_Dat_Arr[i] = Temp_Value_Arr[i];
+  71   2              }
+  72   1      }
+  73          
+  74          //数码管显示函数
+  75          void LED_Display_Show(){
+  76   1              unsigned char i;
+  77   1              unsigned char com;
+  78   1              unsigned char dat;
+  79   1              
+  80   1              for(i = 0;i < 8;i++){
+  81   2                      SEG(0xFF);
+  82   2                      COM(0xFF);
+  83   2                      COM(1<<com);
+  84   2                      dat = SEG_Table[Temp_Dat_Arr[i]];
+  85   2                      SEG(dat);
+  86   2                      com++;
+  87   2                      Delay10us();
+  88   2                      Delay10us();
+  89   2                      Delay10us();
+  90   2                      Delay10us();
+  91   2                      Delay10us();
+  92   2                      Delay10us();
+  93   2                      Delay10us();
+  94   2              }
+  95   1              com = 0;
+  96   1              SEG(0xFF);
+  97   1              COM(0xFF);
+  98   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    343    ----
+   CONSTANT SIZE    =     11    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     19       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,120 @@
+C51 COMPILER V9.60.7.0   UART                                                              02/20/2026 18:55:58 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\Uart.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Uart.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Uart
+                    -.lst) OBJECT(.\Objects\Uart.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "PCF8591.h"
+   3          #include "DS18B20.h"
+   4          
+   5          unsigned char Send_Temp[11] = {'0'};
+   6          unsigned char Send_Voltage[14] = {'0'};
+   7          unsigned char Recv_dat[1] = {'0'};
+   8          unsigned char recv_value = '0';
+   9          unsigned char recv_cnt = 0;
+  10          bit recv_flag = 0;
+  11          
+  12          void Uart1_Isr(void) interrupt 4
+  13          {
+  14   1              if (TI)                         //检测串口1发送中断
+  15   1              {
+  16   2                      TI = 0;                 //清除串口1发送中断请求位
+  17   2              }
+  18   1              if (RI)                         //检测串口1接收中断
+  19   1              {
+  20   2                      RI = 0;                 //清除串口1接收中断请求位
+  21   2              if(recv_cnt < 1){
+  22   3                  Recv_dat[recv_cnt] = SBUF;
+  23   3                  recv_cnt++;
+  24   3                  if(recv_cnt == 1){
+  25   4                      recv_flag = 1;
+  26   4                      recv_cnt = 0;
+  27   4                  }
+  28   3              }
+  29   2              }
+  30   1      }
+  31          
+  32          void Uart1_Init(void)   //9600bps@12.000MHz
+  33          {
+  34   1              SCON = 0x50;            //8位数据,可变波特率
+  35   1              AUXR |= 0x40;           //定时器时钟1T模式
+  36   1              AUXR &= 0xFE;           //串口1选择定时器1为波特率发生器
+  37   1              TMOD &= 0x0F;           //设置定时器模式
+  38   1              TL1 = 0xC7;                     //设置定时初始值
+  39   1              TH1 = 0xFE;                     //设置定时初始值
+  40   1              ET1 = 0;                        //禁止定时器中断
+  41   1              TR1 = 1;                        //定时器1开始计时
+  42   1              ES = 1;                         //使能串口1中断
+  43   1          EA = 1;
+  44   1      }
+  45          
+  46          void Uart_Sendstring(unsigned char *str){
+  47   1          unsigned char *dat;
+  48   1          dat = str;
+  49   1          while(*dat != '\0'){
+  50   2              SBUF = *dat;
+  51   2              while(TI == 0);
+  52   2              TI = 0;
+  53   2              dat++;
+  54   2          }
+C51 COMPILER V9.60.7.0   UART                                                              02/20/2026 18:55:58 PAGE 2   
+
+  55   1      }
+  56          
+  57          void Send_Temp_login(){
+  58   1          Send_Temp[0] = 'T';
+  59   1          Send_Temp[1] = 'E';
+  60   1          Send_Temp[2] = 'M';
+  61   1          Send_Temp[3] = 'P';
+  62   1          Send_Temp[4] = ':';
+  63   1          Send_Temp[5] = temp_value / 100 + '0';
+  64   1          Send_Temp[6] = temp_value % 100 / 10 + '0';
+  65   1          Send_Temp[7] = '.';
+  66   1          Send_Temp[8] = temp_value % 10 + '0';
+  67   1          Send_Temp[9] = 'C';
+  68   1          Send_Temp[10] = '\0';
+  69   1          Uart_Sendstring(Send_Temp);
+  70   1      }
+  71          
+  72          void Send_Voltage_login(){
+  73   1          Send_Voltage[0] = 'V';
+  74   1          Send_Voltage[1] = 'o';
+  75   1          Send_Voltage[2] = 'l';
+  76   1          Send_Voltage[3] = 't';
+  77   1          Send_Voltage[4] = 'a';
+  78   1          Send_Voltage[5] = 'g';
+  79   1          Send_Voltage[6] = 'e';
+  80   1          Send_Voltage[7] = ':';
+  81   1          Send_Voltage[8] = ADC_value / 100 + '0';
+  82   1          Send_Voltage[9] = '.';
+  83   1          Send_Voltage[10] = ADC_value % 100 / 10 + '0';
+  84   1          Send_Voltage[11] = ADC_value % 10 + '0';
+  85   1          Send_Voltage[12] = 'V';
+  86   1          Send_Voltage[13] = '\0';
+  87   1          Uart_Sendstring(Send_Voltage);
+  88   1      }
+  89          
+  90          void Recv_login(){
+  91   1          if(recv_flag){
+  92   2              recv_value = Recv_dat[0];
+  93   2          }
+  94   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    303    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     28    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

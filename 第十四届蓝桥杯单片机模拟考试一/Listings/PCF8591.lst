@@ -1,0 +1,53 @@
+C51 COMPILER V9.60.7.0   PCF8591                                                           02/12/2026 21:29:44 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PCF8591
+OBJECT MODULE PLACED IN .\Objects\PCF8591.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE PCF8591.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\P
+                    -CF8591.lst) OBJECT(.\Objects\PCF8591.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "IIC.h"
+   3          #include "Timer.h"
+   4          
+   5          unsigned int Sound_value = 0;
+   6          
+   7          float RB2_Value(){
+   8   1          float dat;
+   9   1          I2CStart();
+  10   1          I2CSendByte(0x90);
+  11   1          I2CWaitAck();
+  12   1          I2CSendByte(0x03);
+  13   1          I2CWaitAck();
+  14   1          I2CStop();
+  15   1          I2CStart();
+  16   1          I2CSendByte(0x91);
+  17   1          I2CWaitAck();
+  18   1          dat = I2CReceiveByte();
+  19   1          I2CWaitAck();
+  20   1          I2CStop();
+  21   1          return dat / 255.0 * 5.0 * 18.0;
+  22   1      }
+  23          
+  24          void Read_Sound(){
+  25   1          float dat = RB2_Value();
+  26   1          if(Sound_cnt == 99){
+  27   2              Sound_value = (unsigned int)(dat * 10);
+  28   2          }
+  29   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    128    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       8
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

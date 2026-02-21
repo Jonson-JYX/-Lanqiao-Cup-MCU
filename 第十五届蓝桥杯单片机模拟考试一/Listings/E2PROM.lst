@@ -1,0 +1,221 @@
+C51 COMPILER V9.60.7.0   E2PROM                                                            01/23/2026 15:16:51 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE E2PROM
+OBJECT MODULE PLACED IN .\Objects\E2PROM.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE E2PROM.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\E2
+                    -PROM.lst) OBJECT(.\Objects\E2PROM.obj)
+
+line level    source
+
+   1          #include "stc15f2k60s2.h"
+   2          #include "intrins.h"
+   3          #include "Delay.h"  
+   4          #include "DS1302.h" 
+   5          #include "E2PROM.h"
+   6          
+   7          sbit SCL = P1^5;
+   8          sbit SDA1 = P1^4;
+   9          
+  10          // 格式：[0]=时十位、[1]=时个位、[2]=分十位、[3]=分个位
+  11          unsigned char g_FirstInputTime[TIME_ARRAY_LEN] = {0};
+  12          
+  13          // 标记：是否已记录首次数字键时间（避免重复记录）
+  14          static bit g_FirstInputFlag = 0;
+  15          
+  16          // ------------------- I2C底层时序 -------------------
+  17          void I2C_Start(void)
+  18          {
+  19   1          SDA1 = 1;
+  20   1          SCL = 1;
+  21   1          _nop_();
+  22   1          SDA1 = 0;
+  23   1          _nop_();
+  24   1          SCL = 0;
+  25   1      }
+  26          
+  27          void I2C_Stop(void)
+  28          {
+  29   1          SDA1 = 0;
+  30   1          SCL = 1;
+  31   1          _nop_();
+  32   1          SDA1 = 1;
+  33   1          _nop_();
+  34   1      }
+  35          
+  36          void I2C_Ack(void)
+  37          {
+  38   1          SDA1 = 0;
+  39   1          _nop_();
+  40   1          SCL = 1;
+  41   1          _nop_();
+  42   1          SCL = 0;
+  43   1          SDA1 = 1;
+  44   1      }
+  45          
+  46          bit I2C_WaitAck(void)
+  47          {
+  48   1          bit ack_flag;
+  49   1          SDA1 = 1;
+  50   1          _nop_();
+  51   1          SCL = 1;
+  52   1          _nop_();
+  53   1          ack_flag = SDA;
+  54   1          SCL = 0;
+C51 COMPILER V9.60.7.0   E2PROM                                                            01/23/2026 15:16:51 PAGE 2   
+
+  55   1          return ack_flag;
+  56   1      }
+  57          
+  58          void I2C_SendByte(unsigned char dat)
+  59          {
+  60   1          unsigned char i;
+  61   1          for(i=0; i<8; i++)
+  62   1          {
+  63   2              SCL = 0;
+  64   2              _nop_();
+  65   2              SDA1 = (dat & 0x80) >> 7;
+  66   2              dat <<= 1;
+  67   2              _nop_();
+  68   2              SCL = 1;
+  69   2              _nop_();
+  70   2          }
+  71   1          SCL = 0;
+  72   1      }
+  73          
+  74          unsigned char I2C_RecvByte(void)
+  75          {
+  76   1          unsigned char i, dat = 0;
+  77   1          SCL = 0;
+  78   1          SDA1 = 1;
+  79   1          for(i=0; i<8; i++)
+  80   1          {
+  81   2              _nop_();
+  82   2              SCL = 1;
+  83   2              _nop_();
+  84   2              dat = (dat << 1) | SDA;
+  85   2              SCL = 0;
+  86   2              _nop_();
+  87   2          }
+  88   1          return dat;
+  89   1      }
+  90          
+  91          // ------------------- E2PROM基础操作 -------------------
+  92          void I2C_Init(void)
+  93          {
+  94   1          SCL = 1;
+  95   1          _nop_();
+  96   1          SDA1 = 1;
+  97   1          _nop_();
+  98   1      }
+  99          
+ 100          void E2PROM_Write(unsigned char addr, unsigned char dat)
+ 101          {
+ 102   1          I2C_Start();
+ 103   1          I2C_SendByte(0xA0);
+ 104   1          I2C_WaitAck();
+ 105   1          I2C_SendByte(addr);
+ 106   1          I2C_WaitAck();
+ 107   1          I2C_SendByte(dat);
+ 108   1          I2C_WaitAck();
+ 109   1          I2C_Stop();
+ 110   1          Delay10ms();
+ 111   1      }
+ 112          
+ 113          unsigned char E2PROM_Read(unsigned char addr)
+ 114          {
+ 115   1          unsigned char dat;
+ 116   1          I2C_Start();
+C51 COMPILER V9.60.7.0   E2PROM                                                            01/23/2026 15:16:51 PAGE 3   
+
+ 117   1          I2C_SendByte(0xA0);
+ 118   1          I2C_WaitAck();
+ 119   1          I2C_SendByte(addr);
+ 120   1          I2C_WaitAck();
+ 121   1      
+ 122   1          I2C_Start();
+ 123   1          I2C_SendByte(0xA1);
+ 124   1          I2C_WaitAck();
+ 125   1          dat = I2C_RecvByte();
+ 126   1          I2C_Stop();
+ 127   1          return dat;
+ 128   1      }
+ 129          
+ 130          void Save_Data_To_E2PROM(unsigned char hour, unsigned char min, unsigned int input_data)
+ 131          {
+ 132   1          unsigned char high_byte = input_data / 100;
+ 133   1          unsigned char low_byte = input_data % 100;
+ 134   1          E2PROM_Write(0, hour);
+ 135   1          E2PROM_Write(1, min);
+ 136   1          E2PROM_Write(2, high_byte);
+ 137   1          E2PROM_Write(3, low_byte);
+ 138   1      }
+ 139          
+ 140          unsigned int Read_Last_Data_From_E2PROM(void)
+ 141          {
+ 142   1          unsigned char high = E2PROM_Read(2);
+ 143   1          unsigned char low = E2PROM_Read(3);
+ 144   1          return (high * 100) + low;
+ 145   1      }
+ 146          
+ 147          // 记录首次数字键时间 
+ 148          unsigned char* Record_First_Input_Time(void)
+ 149          {
+ 150   1          // 仅首次调用时记录时间
+ 151   1          if(g_FirstInputFlag == 0)
+ 152   1          {
+ 153   2              unsigned char *rtc = ReadRTC(); // 读取DS1302实时时间（你的原有函数）
+ 154   2              // 解析时间为四位数组（BCD码直接拆分，无需转十进制）
+ 155   2              g_FirstInputTime[0] = rtc[0]; // 时十位
+ 156   2              g_FirstInputTime[1] = rtc[1]; // 时个位
+ 157   2              g_FirstInputTime[2] = rtc[3]; // 分十位
+ 158   2              g_FirstInputTime[3] = rtc[4]; // 分个位
+ 159   2              
+ 160   2              g_FirstInputFlag = 1; // 标记已记录，后续调用不再更新
+ 161   2          }
+ 162   1          
+ 163   1          // 返回四位临时数组指针
+ 164   1          return g_FirstInputTime;
+ 165   1      }
+ 166          
+ 167          //从E2PROM读取时间并解析为四位数组 
+ 168          unsigned char* Read_Record_Time_To_4Array(void)
+ 169          {
+ 170   1          // 从E2PROM读取存储的时、分（十进制）
+ 171   1          unsigned char hour = E2PROM_Read(0);
+ 172   1          unsigned char min = E2PROM_Read(1);
+ 173   1          
+ 174   1          // 解析为四位数组（十进制拆分为十位+个位）
+ 175   1          g_FirstInputTime[0] = hour / 10;  // 时十位
+ 176   1          g_FirstInputTime[1] = hour % 10;  // 时个位
+ 177   1          g_FirstInputTime[2] = min / 10;   // 分十位
+ 178   1          g_FirstInputTime[3] = min % 10;   // 分个位
+C51 COMPILER V9.60.7.0   E2PROM                                                            01/23/2026 15:16:51 PAGE 4   
+
+ 179   1          
+ 180   1          return g_FirstInputTime;
+ 181   1      }
+ 182          
+ 183          // 重置首次记录标志
+ 184          void Reset_First_Input_Flag(void)
+ 185          {
+ 186   1          g_FirstInputFlag = 0;
+ 187   1          g_FirstInputTime[0] = 0;
+ 188   1          g_FirstInputTime[1] = 0;
+ 189   1          g_FirstInputTime[2] = 0;
+ 190   1          g_FirstInputTime[3] = 0;
+ 191   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    379    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4       7
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

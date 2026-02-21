@@ -1,0 +1,205 @@
+C51 COMPILER V9.60.7.0   LED_DIPLAY                                                        02/04/2026 14:16:43 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DIPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Diplay.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Diplay.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\LED_Diplay.lst) OBJECT(.\Objects\LED_Diplay.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Common.h"
+   3          #include "Delay.h"
+   4          #include "DS1302.h"
+   5          #include "PCF8591.h"
+   6          #include "DS18B20.h"
+   7          #include "KEY.h"
+   8          
+   9          code unsigned char SEG_Table[] = {
+  10                  0xC0,   //0
+  11                  0xF9,   //1
+  12                  0xA4,   //2
+  13                  0xB0,   //3
+  14                  0x99,   //4
+  15                  0x92,   //5
+  16                  0x82,   //6
+  17                  0xF8,   //7
+  18                  0x80,   //8
+  19                  0x90,   //9
+  20                  0xC6,   //C
+  21                  0xBF,   //-
+  22                  0xFF    //全灭
+  23          };
+  24          
+  25          //时间界面存储数组
+  26          unsigned char Time_dat_arr[] = {12,12,11,12,12,11,12,12};
+  27          //数据界面存储数组
+  28          unsigned char Value_dat_arr[] = {12,12,12,12,12,12,12,12};
+  29          //查询界面存储数组
+  30          unsigned char Select_dat_arr[] = {10,12,12,12,12,12,12,12};
+  31          //数码管显示数组
+  32          unsigned char dat_arr[] = {12,12,12,12,12,12,12,12};
+  33          
+  34          //时间界面转化函数
+  35          void Time_Change(){
+  36   1              unsigned char *time = ReadRTC();
+  37   1              Time_dat_arr[0] = time[0];
+  38   1              Time_dat_arr[1] = time[1];
+  39   1              Time_dat_arr[3] = time[2];
+  40   1              Time_dat_arr[4] = time[3];
+  41   1              Time_dat_arr[6] = time[4];
+  42   1              Time_dat_arr[7] = time[5];
+  43   1      }
+  44          
+  45          //数据界面转化函数
+  46          void Value_Change(){
+  47   1              float lighting_value = Lighting_Value();
+  48   1              float temp_value = Temp_Value();
+  49   1              unsigned int light_dat = (unsigned int)(lighting_value * 500);
+  50   1              unsigned int temp_dat = (unsigned int)(temp_value * 100);
+  51   1              //处理光敏数据
+  52   1              if(light_dat >= 100){
+  53   2                      Value_dat_arr[0] = light_dat / 100;
+  54   2                      Value_dat_arr[1] = light_dat % 100 /10;
+C51 COMPILER V9.60.7.0   LED_DIPLAY                                                        02/04/2026 14:16:43 PAGE 2   
+
+  55   2                      Value_dat_arr[2] = light_dat % 10;
+  56   2              }
+  57   1              else if(light_dat < 100 && light_dat >= 10){
+  58   2                      Value_dat_arr[0] = 0;
+  59   2                      Value_dat_arr[1] = light_dat /10;
+  60   2                      Value_dat_arr[2] = light_dat % 10;
+  61   2              }
+  62   1              else if(light_dat < 10 && light_dat >= 0){
+  63   2                      Value_dat_arr[0] = 0;
+  64   2                      Value_dat_arr[1] = 0;
+  65   2                      Value_dat_arr[2] = light_dat % 10;
+  66   2              }
+  67   1              
+  68   1              //处理温度数据
+  69   1              if(temp_dat >= 1000){
+  70   2                      Value_dat_arr[4] = temp_dat / 1000;
+  71   2                      Value_dat_arr[5] = temp_dat % 1000 / 100;
+  72   2                      Value_dat_arr[6] = temp_dat % 100 / 10;
+  73   2                      Value_dat_arr[7] = temp_dat % 10;
+  74   2              }
+  75   1              else if(temp_dat >= 100 && temp_dat < 1000){
+  76   2                      Value_dat_arr[4] = 12;
+  77   2                      Value_dat_arr[5] = temp_dat / 100;
+  78   2                      Value_dat_arr[6] = temp_dat % 100 / 10;
+  79   2                      Value_dat_arr[7] = temp_dat % 10;
+  80   2              }
+  81   1              else if(temp_dat >= 10 && temp_dat < 100){
+  82   2                      Value_dat_arr[4] = 12;
+  83   2                      Value_dat_arr[5] = 0;
+  84   2                      Value_dat_arr[6] = temp_dat / 10;
+  85   2                      Value_dat_arr[7] = temp_dat % 10;
+  86   2              }
+  87   1              else if(temp_dat >= 0 && temp_dat < 10){
+  88   2                      Value_dat_arr[4] = 12;
+  89   2                      Value_dat_arr[5] = 0;
+  90   2                      Value_dat_arr[6] = 0;
+  91   2                      Value_dat_arr[7] = temp_dat % 10;
+  92   2              }
+  93   1      }
+  94          
+  95          //查询界面转化函数
+  96          void Select_Change(){
+  97   1              unsigned char *time = ReadRTC();
+  98   1              float lighting_value = Lighting_Value();
+  99   1              float temp_value = Temp_Value();
+ 100   1              unsigned int light_dat = (unsigned int)(lighting_value * 50);
+ 101   1              unsigned int temp_dat = (unsigned int)(temp_value * 10);
+ 102   1              if((time[4] == 0 && time[5] == 0) || S8_password == 1){
+ 103   2                      if(light_dat >= 10 && light_dat < 100){
+ 104   3                              Select_dat_arr[2] = light_dat / 10;
+ 105   3                              Select_dat_arr[3] = light_dat % 10;
+ 106   3                      }
+ 107   2                      else if(light_dat >= 0 && light_dat < 10){
+ 108   3                              Select_dat_arr[2] = 0;
+ 109   3                              Select_dat_arr[3] = light_dat % 10;
+ 110   3                      }
+ 111   2                      if(temp_dat >= 100 && temp_dat < 1000){
+ 112   3                              Select_dat_arr[5] = temp_dat / 100;
+ 113   3                              Select_dat_arr[6] = temp_dat % 100 / 10;
+ 114   3                              Select_dat_arr[7] = temp_dat % 10;
+ 115   3                      }
+ 116   2                      else if(temp_dat >= 10 && temp_dat < 100){
+C51 COMPILER V9.60.7.0   LED_DIPLAY                                                        02/04/2026 14:16:43 PAGE 3   
+
+ 117   3                              Select_dat_arr[5] = 12;
+ 118   3                              Select_dat_arr[6] = temp_dat / 10;
+ 119   3                              Select_dat_arr[7] = temp_dat % 10;
+ 120   3                      }
+ 121   2                      else if(temp_dat >= 0 && temp_dat < 10){
+ 122   3                              Select_dat_arr[5] = 12;
+ 123   3                              Select_dat_arr[6] = 0;
+ 124   3                              Select_dat_arr[7] = temp_dat % 10;
+ 125   3                      }
+ 126   2                      if(S8_password == 1){
+ 127   3                              S8_password = 0;
+ 128   3                      }
+ 129   2              }
+ 130   1      }
+ 131          
+ 132          //数码管筛选函数
+ 133          void LED_Display_Choose(){
+ 134   1              unsigned char i;
+ 135   1              if(S4_cnt % 3 == 1){
+ 136   2                      for(i = 0 ;i < 8;i++){
+ 137   3                              dat_arr[i] = Time_dat_arr[i];
+ 138   3                      }
+ 139   2              }
+ 140   1              if(S4_cnt % 3 == 2){
+ 141   2                      for(i = 0 ;i < 8;i++){
+ 142   3                              dat_arr[i] = Value_dat_arr[i];
+ 143   3                      }
+ 144   2              }
+ 145   1              if(S4_cnt % 3 == 0){
+ 146   2                      for(i = 0 ;i < 8;i++){
+ 147   3                              dat_arr[i] = Select_dat_arr[i];
+ 148   3                      }
+ 149   2              }
+ 150   1      }
+ 151          
+ 152          //数码管显示函数
+ 153          void LED_Display_Show(){
+ 154   1              unsigned char i;
+ 155   1              unsigned char dat;
+ 156   1              for(i = 0;i < 8;i++){
+ 157   2                      SEG(0xFF);
+ 158   2                      COM(1<<i);
+ 159   2                      dat = SEG_Table[dat_arr[i]];
+ 160   2                      if(S4_cnt % 3 == 2){
+ 161   3                              if(i == 0 || i == 5){
+ 162   4                                      dat = dat & 0x7F;
+ 163   4                              }
+ 164   3                      }
+ 165   2                      if(S4_cnt % 3 == 0){
+ 166   3                              if(i == 2 || i == 6){
+ 167   4                                      dat = dat & 0x7F;
+ 168   4                              }
+ 169   3                      }
+ 170   2                      SEG(dat);
+ 171   2                      Delay50us();
+ 172   2              }
+ 173   1              SEG(0xFF);
+ 174   1              COM(0xFF);
+ 175   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.60.7.0   LED_DIPLAY                                                        02/04/2026 14:16:43 PAGE 4   
+
+   CODE SIZE        =   1011    ----
+   CONSTANT SIZE    =     13    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     32      27
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

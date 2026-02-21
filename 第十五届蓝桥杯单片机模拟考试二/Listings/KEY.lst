@@ -1,0 +1,66 @@
+C51 COMPILER V9.60.7.0   KEY                                                               01/24/2026 22:57:29 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\KEY.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE KEY.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\KEY.l
+                    -st) OBJECT(.\Objects\KEY.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Delay.h"
+   3          
+   4          sbit S4 = P3^3;
+   5          sbit S5 = P3^2;
+   6          
+   7          unsigned char S4_Password = 1;          // 1=模式界面(MODE)，0=DAC界面
+   8          unsigned char cur_mode = 1;   // 默认模式一（温度）
+   9          
+  10          // 按键扫描（
+  11          unsigned char Key_Scan(){
+  12   1          unsigned char key = 0;
+  13   1          if(S4 == 0){
+  14   2              Delay10ms();
+  15   2              while(S4 == 0);  // 等待按键释放
+  16   2              key = 1;
+  17   2          }
+  18   1          if(S5 == 0){
+  19   2              Delay10ms();
+  20   2              while(S5 == 0);  // 等待按键释放
+  21   2              key = 2;
+  22   2          }
+  23   1          return key;
+  24   1      }
+  25          
+  26          // 按键业务逻辑
+  27          unsigned char Key_Work(){
+  28   1          unsigned char num = Key_Scan();
+  29   1          
+  30   1          // S4：仅在模式界面(MODE)切换模式一/二
+  31   1          if(num == 1 && S4_Password == 1){
+  32   2              cur_mode = (cur_mode == 1) ? 2 : 1;
+  33   2          }
+  34   1          
+  35   1          // S5：切换界面（MODE ? DAC）
+  36   1          if(num == 2){
+  37   2              S4_Password = !S4_Password;
+  38   2          }
+  39   1          
+  40   1          // 返回当前状态标识：高字节=界面(1=MODE,0=DAC)，低字节=模式(1/2)
+  41   1          return (S4_Password << 4) | cur_mode;
+  42   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     78    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

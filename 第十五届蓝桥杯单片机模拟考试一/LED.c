@@ -1,0 +1,10 @@
+#include <stc15f2k60s2.h>
+
+code unsigned LED_Value[6] = {
+    0xFE,
+    0xFD,
+    0xFB,
+	0xF6,
+	0xF5,
+	0xF3
+};

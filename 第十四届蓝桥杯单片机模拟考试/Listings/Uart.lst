@@ -1,0 +1,108 @@
+C51 COMPILER V9.60.7.0   UART                                                              02/13/2026 15:15:28 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\Uart.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Uart.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Uart
+                    -.lst) OBJECT(.\Objects\Uart.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Distance.h"
+   3          
+   4          unsigned char send_dat1[13] = {0};
+   5          unsigned char send_dat2[14] = {0};
+   6          unsigned char send_dat3[15] = {0};
+   7          
+   8          void Uart_Init(void)    //9600bps@12.000MHz
+   9          {
+  10   1              SCON = 0x50;            //8位数据,可变波特率
+  11   1              AUXR |= 0x40;           //定时器时钟1T模式
+  12   1              AUXR &= 0xFE;           //串口1选择定时器1为波特率发生器
+  13   1              TMOD &= 0x0F;           //设置定时器模式
+  14   1              TL1 = 0xC7;                     //设置定时初始值
+  15   1              TH1 = 0xFE;                     //设置定时初始值
+  16   1              ET1 = 0;                        //禁止定时器中断
+  17   1              TR1 = 1;                        //定时器1开始计时
+  18   1      }
+  19          
+  20          void Uart_Sendstring(unsigned char *str){
+  21   1          unsigned char *p = str;
+  22   1          while(*p != '\0'){
+  23   2              SBUF = *p; //发送一个字节
+  24   2              while(TI == 0); //等待发送完成
+  25   2              TI = 0; //清除发送完成标志
+  26   2              p++; 
+  27   2          }
+  28   1      }
+  29          
+  30          void Uart_Send_dat(){
+  31   1          if(sound_dat >= 0 && sound_dat < 10){
+  32   2              send_dat1[0] = 'D'; 
+  33   2              send_dat1[1] = 'i';
+  34   2              send_dat1[2] = 's';
+  35   2              send_dat1[3] = 't';  
+  36   2              send_dat1[4] = 'a';
+  37   2              send_dat1[5] = 'n';
+  38   2              send_dat1[6] = 'c';
+  39   2              send_dat1[7] = 'e';
+  40   2              send_dat1[8] = ':';
+  41   2              send_dat1[9] = sound_dat + '0'; 
+  42   2              send_dat1[10] = 'c';
+  43   2              send_dat1[11] = 'm';
+  44   2              send_dat1[12] = '\0'; //字符串结束标志
+  45   2              Uart_Sendstring(send_dat1); //发送字符串
+  46   2          }
+  47   1          if(sound_dat >= 10 && sound_dat < 100){
+  48   2              send_dat2[0] = 'D'; 
+  49   2              send_dat2[1] = 'i';
+  50   2              send_dat2[2] = 's';
+  51   2              send_dat2[3] = 't';  
+  52   2              send_dat2[4] = 'a';
+  53   2              send_dat2[5] = 'n';
+  54   2              send_dat2[6] = 'c';
+C51 COMPILER V9.60.7.0   UART                                                              02/13/2026 15:15:28 PAGE 2   
+
+  55   2              send_dat2[7] = 'e';
+  56   2              send_dat2[8] = ':';
+  57   2              send_dat2[9] = (sound_dat / 10) + '0'; //十位
+  58   2              send_dat2[10] = (sound_dat % 10) + '0'; //个位
+  59   2              send_dat2[11] = 'c';     
+  60   2              send_dat2[12] = 'm';
+  61   2              send_dat2[13] = '\0'; //字符串结束标志
+  62   2              Uart_Sendstring(send_dat2); //发送字符串
+  63   2          }
+  64   1          if(sound_dat >= 100){
+  65   2              send_dat3[0] = 'D'; 
+  66   2              send_dat3[1] = 'i';
+  67   2              send_dat3[2] = 's';
+  68   2              send_dat3[3] = 't';  
+  69   2              send_dat3[4] = 'a';
+  70   2              send_dat3[5] = 'n';
+  71   2              send_dat3[6] = 'c';
+  72   2              send_dat3[7] = 'e';
+  73   2              send_dat3[8] = ':';
+  74   2              send_dat3[9] = (sound_dat / 100) + '0'; //百位
+  75   2              send_dat3[10] = ((sound_dat % 100) / 10) + '0'; //十位
+  76   2              send_dat3[11] = (sound_dat % 10) + '0'; //个位
+  77   2              send_dat3[12] = 'c';     
+  78   2              send_dat3[13] = 'm';
+  79   2              send_dat3[14] = '\0'; //字符串结束标志
+  80   2              Uart_Sendstring(send_dat3); //发送字符串
+  81   2          }
+  82   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    336    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     42    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

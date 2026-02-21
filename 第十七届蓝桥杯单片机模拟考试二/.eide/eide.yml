@@ -1,0 +1,67 @@
+version: "4.1"
+name: project
+type: C51
+deviceName: null
+packDir: null
+srcDirs: []
+virtualFolder:
+  name: <virtual_root>
+  files: []
+  folders:
+    - name: Source Group 1
+      files:
+        - path: main.c
+        - path: DS18B20.c
+        - path: PCF8591.c
+        - path: KEY.c
+        - path: LED.c
+        - path: LED_Display.c
+        - path: Delay.c
+        - path: Onewire.c
+        - path: IIC.c
+        - path: Common.h
+        - path: DS18B20.h
+        - path: PCF8591.h
+        - path: KEY.h
+        - path: LED.h
+        - path: LED_Display.h
+        - path: Delay.h
+        - path: Onewire.h
+        - path: IIC.h
+      folders: []
+dependenceList: []
+outDir: build
+miscInfo:
+  uid: 869df4a19c1192b4f3787ed412cd1fc5
+targets:
+  Target 1:
+    cppPreprocessAttrs:
+      defineList: []
+      incList:
+        - C:/Keil_v5/C51/INC/STC
+      libList: []
+    excludeList: []
+    toolchain: Keil_C51
+    toolchainConfigMap:
+      Keil_C51:
+        options:
+          version: 2
+          afterBuildTasks: []
+          asm-compiler: {}
+          beforeBuildTasks: []
+          c/cpp-compiler:
+            optimization-level: level-8
+            optimization-type: SPEED
+          global:
+            ram-mode: SMALL
+            rom-mode: LARGE
+          linker:
+            misc-controls: ""
+            output-format: elf
+            remove-unused: true
+    uploadConfigMap:
+      Custom:
+        bin: ""
+        commandLine: ""
+        eraseChipCommand: ""
+    uploader: Custom

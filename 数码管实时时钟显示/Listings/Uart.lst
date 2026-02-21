@@ -1,0 +1,88 @@
+C51 COMPILER V9.60.7.0   UART                                                              01/20/2026 13:33:53 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\Uart.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Uart.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Uart
+                    -.lst) OBJECT(.\Objects\Uart.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Uart.h"
+   3          #include "DS1302.h"
+   4          
+   5          #define BAUD         9600  //波特率
+   6          #define SYSTEMCLOCK  12000000L  //系统时钟频率
+   7          unsigned char time_send[14];
+   8          
+   9          void Uart_Init(void)    //9600bps@12.000MHz
+  10          {
+  11   1              SCON = 0x50;            //8位数据,可变波特率
+  12   1              AUXR |= 0x40;           //定时器时钟1T模式
+  13   1              AUXR &= 0xFE;           //串口1选择定时器1为波特率发生器
+  14   1              TMOD &= 0x0F;           //设置定时器模式
+  15   1              TL1 = 0xC7;                     //设置定时初始值
+  16   1              TH1 = 0xFE;                     //设置定时初始值
+  17   1              ET1 = 0;                        //禁止定时器中断
+  18   1              TR1 = 1;                        //定时器1开始计时
+  19   1      }
+  20          
+  21          //通过串口发送字符串
+  22          void uart_sendstring(unsigned char *str)
+  23          {
+  24   1          unsigned char *p;
+  25   1          p = str;
+  26   1          while(*p != '\0')
+  27   1          {
+  28   2              SBUF = *p;
+  29   2              while(TI == 0);  //等待发送标志位置位
+  30   2              TI = 0;
+  31   2              p++;
+  32   2          }
+  33   1      }
+  34          
+  35          //接收时间转化函数
+  36          void Send_Time(){
+  37   1              unsigned char *p_rtc = ReadRTC();
+  38   1              unsigned char dat[8];
+  39   1              unsigned char i;
+  40   1              for(i = 0;i < 8;i++){
+  41   2                      dat[i] = p_rtc[i];
+  42   2              }
+  43   1               time_send[0] = 'T';
+  44   1          time_send[1] = 'i';
+  45   1          time_send[2] = 'm';
+  46   1          time_send[3] = 'e';
+  47   1          time_send[4] = ':';
+  48   1          // 小时
+  49   1          time_send[5] = (p_rtc[0] * 10) / 10 + '0'; // 小时十位
+  50   1          time_send[6] = (p_rtc[1] % 10) + '0';      // 小时个位
+  51   1          time_send[7] = ':';
+  52   1          // 分钟
+  53   1          time_send[8] = (p_rtc[3] * 10) / 10 + '0'; // 分钟十位
+  54   1          time_send[9] = (p_rtc[4] % 10) + '0';      // 分钟个位
+C51 COMPILER V9.60.7.0   UART                                                              01/20/2026 13:33:53 PAGE 2   
+
+  55   1          time_send[10] = ':';
+  56   1          // 秒
+  57   1          time_send[11] = (p_rtc[6] * 10) / 10 + '0'; // 秒十位
+  58   1          time_send[12] = (p_rtc[7] % 10) + '0';      // 秒个位
+  59   1          time_send[13] = '\0'; // 字符串结束符
+  60   1          
+  61   1              uart_sendstring(time_send);
+  62   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    239    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     14      11
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

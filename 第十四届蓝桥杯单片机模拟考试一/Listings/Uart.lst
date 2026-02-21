@@ -1,0 +1,125 @@
+C51 COMPILER V9.60.7.0   UART                                                              02/12/2026 21:29:44 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\Uart.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Uart.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Uart
+                    -.lst) OBJECT(.\Objects\Uart.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "KEY.h"
+   3          #include "PCF8591.h"
+   4          
+   5          unsigned char recv_dat[7] = {'R','e','t','u','r','n','\0'};
+   6          unsigned char recv_cnt = 0;
+   7          bit recv_flag = 0;
+   8          unsigned char send_dat[14] = {0};
+   9          unsigned char send_cnt = 0;
+  10          bit send_flag = 0;
+  11          //发送中标志，初始为0（未发送）
+  12          bit sending_flag = 0;
+  13          
+  14          // 串口中断服务函数（修复TI/RI判断逻辑）
+  15          void Uart_Isr(void) interrupt 4{
+  16   1              if (RI)                         // 检测串口1接收中断
+  17   1              {
+  18   2              RI = 0;                 // 清除接收中断标志
+  19   2              if(recv_cnt < 7){
+  20   3                  recv_dat[recv_cnt] = SBUF; // 读取接收数据
+  21   3                  recv_cnt++;
+  22   3                  if(recv_cnt == 6){
+  23   4                      recv_flag = 1; // 接收完成标志
+  24   4                      recv_cnt = 0;
+  25   4                  }
+  26   3              }
+  27   2              }
+  28   1              if (TI) // 检测串口1发送中断
+  29   1              {
+  30   2              TI = 0;            // 清除发送中断标志
+  31   2              if (send_cnt < 14) {
+  32   3                  SBUF = send_dat[send_cnt]; // 发送下一个字节
+  33   3                  send_cnt++;
+  34   3                  if (send_cnt == 14) { 
+  35   4                      send_flag = 1; // 发送完成标志
+  36   4                      send_cnt = 0; 
+  37   4                      sending_flag = 0; // 发送完成，释放锁
+  38   4                  }
+  39   3              }
+  40   2              }
+  41   1      }
+  42          
+  43          void Uart_Init(void){
+  44   1          SCON = 0x50;                // 8位数据,可变波特率
+  45   1              AUXR |= 0x40;           // 定时器时钟1T模式
+  46   1              AUXR &= 0xFE;           // 串口1选择定时器1为波特率发生器
+  47   1              TMOD &= 0x0F;           // 设置定时器模式
+  48   1              TL1 = 0xC7;                     // 波特率9600（12MHz）
+  49   1              TH1 = 0xFE;                     // 定时初始值
+  50   1              ET1 = 0;                        // 禁止定时器1中断
+  51   1              TR1 = 1;                        // 定时器1开始计时
+  52   1              ES = 1;                         // 使能串口1中断
+  53   1          EA = 1;                             // 使能总中断
+  54   1      }
+C51 COMPILER V9.60.7.0   UART                                                              02/12/2026 21:29:44 PAGE 2   
+
+  55          
+  56          // 串口发送字符串（通用函数）
+  57          void Uart_SendString(unsigned char *dat){   
+  58   1          unsigned char *ptr;
+  59   1          // 若正在发送，直接返回
+  60   1          if(sending_flag) return;
+  61   1          sending_flag = 1; // 上锁：标记正在发送
+  62   1          ptr = dat;
+  63   1          while(*ptr != '\0'){
+  64   2              SBUF = *ptr;
+  65   2              while(!TI); // 等待发送完成
+  66   2              TI = 0;     // 清除发送标志
+  67   2              ptr++;
+  68   2          }
+  69   1      }
+  70          
+  71          // 封装噪声数据并发送
+  72          void Sound_Send(){
+  73   1          send_dat[0] = 'N';
+  74   1          send_dat[1] = 'o';
+  75   1          send_dat[2] = 'i';
+  76   1          send_dat[3] = 's';
+  77   1          send_dat[4] = 'e';
+  78   1          send_dat[5] = 's';
+  79   1          send_dat[6] = ':';
+  80   1          send_dat[7] = (Sound_value / 100) + '0';
+  81   1          send_dat[8] = ((Sound_value % 100) / 10) + '0';
+  82   1          send_dat[9] = '.';
+  83   1          send_dat[10] = (Sound_value % 10) + '0';
+  84   1          send_dat[11] = 'd';
+  85   1          send_dat[12] = 'B';
+  86   1          send_dat[13] = '\0';
+  87   1          Uart_SendString(send_dat);
+  88   1      }
+  89          
+  90          // 处理接收的数据
+  91          void Uart_ProcessRecv(void){
+  92   1          if(recv_flag && !sending_flag){ 
+  93   2              recv_flag = 0; 
+  94   2              if(recv_dat[0]=='R' && recv_dat[1]=='e' && recv_dat[2]=='t' && recv_dat[3]=='u' && recv_dat[4]=='r
+             -' && recv_dat[5]=='n'){
+  95   3                  Sound_Send(); 
+  96   3              }
+  97   2          }
+  98   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    279    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     23    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

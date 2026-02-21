@@ -1,0 +1,70 @@
+C51 COMPILER V9.60.7.0   LED                                                               12/14/2025 09:51:24 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN .\Objects\LED.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LED.l
+                    -st) OBJECT(.\Objects\LED.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "common.h"
+   3          #include "LED.h"
+   4          #include "delay.h"
+   5          
+   6          //模式一数组
+   7          code unsigned char LED1[5] = {
+   8                  0x01,0x02,0x04,0x08,0x10
+   9          };
+  10          
+  11          //模式二数组
+  12          code unsigned char LED2[3] = {
+  13                  0x11,0x0A,0x04
+  14          };
+  15          
+  16          //模式一实现代码
+  17          void LED1_Show(){
+  18   1              unsigned char i;
+  19   1              unsigned dat;
+  20   1              LED(0xFF);
+  21   1              for(i = 0 ;i < 5;i++){
+  22   2                      dat = LED1[i];
+  23   2                      LED(dat);
+  24   2                      Delayms(8000);
+  25   2                      LED(0xFF);
+  26   2                      Delayms(8000);
+  27   2              }
+  28   1              LED(0xFF);
+  29   1      }
+  30          
+  31          //模式二实现代码
+  32          void LED2_Show(){
+  33   1              unsigned char i;
+  34   1              unsigned dat;
+  35   1              LED(0xFF);
+  36   1              for(i = 0 ;i < 3;i++){
+  37   2                      dat = LED2[i];
+  38   2                      LED(dat);
+  39   2                      Delayms(8000);
+  40   2                      LED(0xFF);
+  41   2                      Delayms(8000);
+  42   2              }
+  43   1              LED(0xFF);
+  44   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    178    ----
+   CONSTANT SIZE    =      8    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.60.7.0   LED                                                               12/14/2025 09:51:24 PAGE 2   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

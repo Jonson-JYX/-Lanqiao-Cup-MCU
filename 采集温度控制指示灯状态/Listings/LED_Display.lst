@@ -1,0 +1,129 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/26/2026 15:30:42 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Common.h"
+   3          #include "Delay.h"
+   4          #include "LED.h"
+   5          #include "KEY.h"
+   6          #include "DS18B20.h"
+   7          
+   8          code unsigned char SEG_Value[] = {
+   9                  0xC0,   // 0
+  10                  0xF9,   // 1
+  11                  0xA4,   // 2
+  12                  0xB0,   // 3
+  13                  0x99,   // 4
+  14                  0x92,   // 5
+  15                  0x82,   // 6
+  16                  0xF8,   // 7
+  17                  0x80,   // 8
+  18                  0x90,   // 9
+  19                  0xC6,   // C
+  20                  0xFF,   // 全灭
+  21          
+  22          };
+  23          
+  24          //温度显示数组
+  25          unsigned char Temp_Show_Arr[] = {11,11,11,11,11,11,11,10};
+  26          
+  27          //温度设置
+  28          unsigned int Temp_Set_Value = 10000;
+  29          
+  30          //温度临时存储数组
+  31          unsigned char Temp_Dat_Arr[] = {11,11,11,11,11,11,11,10};
+  32          
+  33          //温度设置函数
+  34          void Temp_Set(){
+  35   1              float temp = Temp_Value();
+  36   1              unsigned int temp_dat = (unsigned int)(temp * 10);
+  37   1              unsigned char key = Key_Scan();
+  38   1              if(key == 1){
+  39   2                      Temp_Set_Value = temp_dat;
+  40   2              }
+  41   1      }
+  42          
+  43          //温度转化函数
+  44          void Temp_Change(){
+  45   1              float temp = Temp_Value();
+  46   1              unsigned int temp_dat = (unsigned int)(temp * 10);
+  47   1              unsigned char i;
+  48   1              if(temp_dat > Temp_Set_Value){
+  49   2                      LED(LED_Value[1]);
+  50   2              }
+  51   1              else{
+  52   2                      LED(LED_Value[0]);
+  53   2              }
+  54   1              if(temp_dat >= 1000){
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/26/2026 15:30:42 PAGE 2   
+
+  55   2                      Temp_Dat_Arr[3] = temp_dat / 1000;
+  56   2                      Temp_Dat_Arr[4] = temp_dat % 1000 /100;
+  57   2                      Temp_Dat_Arr[5] = temp_dat % 100 /10;
+  58   2                      Temp_Dat_Arr[6] = temp_dat % 10;
+  59   2              }
+  60   1              if(temp_dat >= 100 && temp_dat < 1000){
+  61   2                      Temp_Dat_Arr[3] = 11;
+  62   2                      Temp_Dat_Arr[4] = temp_dat / 100 ;
+  63   2                      Temp_Dat_Arr[5] = temp_dat % 100 /10;
+  64   2                      Temp_Dat_Arr[6] = temp_dat % 10;
+  65   2              }
+  66   1              if(temp_dat >= 10 && temp_dat < 100){
+  67   2                      Temp_Dat_Arr[3] = 11;
+  68   2                      Temp_Dat_Arr[4] = 11;
+  69   2                      Temp_Dat_Arr[5] = temp_dat / 10;
+  70   2                      Temp_Dat_Arr[6] = temp_dat % 10;
+  71   2              }
+  72   1              if(temp_dat >= 0 && temp_dat < 10){
+  73   2                      Temp_Dat_Arr[3] = 11;
+  74   2                      Temp_Dat_Arr[4] = 11;
+  75   2                      Temp_Dat_Arr[5] = 0;
+  76   2                      Temp_Dat_Arr[6] = temp_dat % 10;
+  77   2              }
+  78   1              for(i = 0;i < 8;i++){
+  79   2                      Temp_Show_Arr[i] = Temp_Dat_Arr[i];
+  80   2              }
+  81   1      }
+  82          //数码管显示数组
+  83          void LED_Display_Show(){
+  84   1              unsigned char i;
+  85   1              unsigned char dat;
+  86   1              unsigned char com = 0;
+  87   1              
+  88   1              for(i = 0;i < 8;i++){
+  89   2                      SEG(0xFF);
+  90   2                      COM(0xFF);
+  91   2                      COM(1<<com);
+  92   2                      dat = SEG_Value[Temp_Show_Arr[i]];
+  93   2                      if(i == 5){
+  94   3                              dat = dat & 0x7F;
+  95   3                      }
+  96   2                      SEG(dat);
+  97   2                      com++;
+  98   2                      Delay40us();
+  99   2              }
+ 100   1              com = 0;
+ 101   1              SEG(0xFF);
+ 102   1              COM(0xFF);
+ 103   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    518    ----
+   CONSTANT SIZE    =     12    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     18      13
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

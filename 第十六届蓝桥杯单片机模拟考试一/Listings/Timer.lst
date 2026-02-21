@@ -1,0 +1,45 @@
+C51 COMPILER V9.60.7.0   TIMER                                                             02/12/2026 16:16:32 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN .\Objects\Timer.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Timer.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Tim
+                    -er.lst) OBJECT(.\Objects\Timer.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          
+   3          unsigned int temp_cnt = 0;
+   4          void Timer_Isr(void) interrupt 1
+   5          {
+   6   1          if(++temp_cnt == 500){
+   7   2              temp_cnt = 0;
+   8   2          }
+   9   1      }
+  10          
+  11          void Timer_Init(void)           //1毫秒@12.000MHz
+  12          {
+  13   1              AUXR |= 0x80;                   //定时器时钟1T模式
+  14   1              TMOD &= 0xF0;                   //设置定时器模式
+  15   1              TL0 = 0x20;                             //设置定时初始值
+  16   1              TH0 = 0xD1;                             //设置定时初始值
+  17   1              TF0 = 0;                                //清除TF0标志
+  18   1              TR0 = 1;                                //定时器0开始计时
+  19   1              ET0 = 1;                                //使能定时器0中断
+  20   1          EA = 1;
+  21   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     64    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

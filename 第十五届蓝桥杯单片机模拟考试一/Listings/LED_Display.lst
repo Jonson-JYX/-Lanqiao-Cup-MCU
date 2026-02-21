@@ -1,0 +1,180 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/23/2026 15:16:50 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "KEY.h"
+   3          #include "Common.h"
+   4          #include "DS1302.h"
+   5          #include "LED.h"
+   6          #include "E2PROM.h"
+   7          
+   8          bit LED4_Password = 0;
+   9          unsigned char max = 0;
+  10          
+  11          code unsigned char LED_Display_Value[14] = {
+  12              0xC0,   // 0
+  13              0xF9,   // 1
+  14              0xA4,   // 2
+  15              0xB0,   // 3
+  16              0x99,   // 4
+  17              0x92,   // 5
+  18              0x82,   // 6
+  19              0xF8,   // 7
+  20              0x80,   // 8
+  21              0x90,   // 9
+  22              0xBF,   // -
+  23              0xC6,   // C
+  24              0x86,   // E
+  25              0xFF    // 全灭
+  26          };
+  27          unsigned char Scanf_Cnt = 0;
+  28          //时间界面存储数组
+  29          unsigned char Time_Arr[8] = {13,13,13,13,13,13,13,13};
+  30          //输入界面存储数组
+  31          unsigned char Scanf_Arr[8] = {11,13,13,13,13,13,13,13};
+  32          //记录界面存储数组
+  33          unsigned char Record_Arr[8] = {12,13,13,13,13,10,13,13};
+  34          
+  35          //输入界面清除函数
+  36          void Scanf_Delete(){
+  37   1              unsigned char i;
+  38   1          Scanf_Arr[0] = 11;
+  39   1          for(i=1; i<8; i++){ // 简化清空逻辑
+  40   2              Scanf_Arr[i] = 13;
+  41   2          }
+  42   1          Scanf_Cnt = 0; //清空输入计数
+  43   1      }
+  44          
+  45          //时间界面显示函数
+  46          void Time_Show(){
+  47   1              unsigned char i;
+  48   1          unsigned char *time = ReadRTC(); // 每次调用都读取最新时间
+  49   1          for(i=0; i<8; i++){
+  50   2              Time_Arr[i] = time[i];
+  51   2          }
+  52   1      }
+  53          
+  54          //输入界面显示函数（数字输入逻辑）
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/23/2026 15:16:50 PAGE 2   
+
+  55          void Scanf_Show(){
+  56   1          unsigned char num = KEY_Scan();
+  57   1          unsigned int value = 0;
+  58   1              unsigned char *rtc;
+  59   1              unsigned char hour;
+  60   1              unsigned char min;
+  61   1              unsigned char i;
+  62   1          if(KEY_Password == 1){ // 仅输入界面解锁时处理输入
+  63   2              if((num >= 0 && num <= 9) && (Scanf_Cnt < 4)){ 
+  64   3                  for(i = 4; i < 8; i++){ 
+  65   4                      Scanf_Arr[i] = Scanf_Arr[i+1];
+  66   4                  }
+  67   3                  Scanf_Arr[7] = num; // 
+  68   3                  Scanf_Cnt++;
+  69   3              }
+  70   2              if(Scanf_Cnt == 4){ // 4位输入完成
+  71   3                  value = Scanf_Arr[4]*1000 + Scanf_Arr[5]*100 + Scanf_Arr[6]*10 + Scanf_Arr[7];
+  72   3                  if(value > max){
+  73   4                      LED4_Password = 1;
+  74   4                      // 存储输入数据到E2PROM
+  75   4                      *rtc = ReadRTC();
+*** WARNING C260 IN LINE 75 OF LED_Display.c: '=': pointer truncation
+  76   4                                      hour = rtc[0]*10 + rtc[1];
+  77   4                      min = rtc[3]*10 + rtc[4];
+  78   4                      Save_Data_To_E2PROM(hour, min, value);
+  79   4                      max = value; // 更新最大值
+  80   4                  }
+  81   3              }
+  82   2          }
+  83   1      }
+  84          
+  85          //记录界面显示函数
+  86          void Record_Show(){
+  87   1          unsigned char *record = Read_Record_Time_To_4Array(); //读取E2PROM存储的时间
+  88   1          Record_Arr[3] = record[0];
+  89   1          Record_Arr[4] = record[1];
+  90   1          Record_Arr[5] = 10; // 分隔符'-'
+  91   1          Record_Arr[6] = record[2];
+  92   1          Record_Arr[7] = record[3];
+  93   1      }
+  94          
+  95          //数码管显示函数
+  96          void LED_Display_Show(){
+  97   1          unsigned char com = 0;  // 位选存储
+  98   1          unsigned char dat = 0;  // 数据缓存区
+  99   1          unsigned char dat_Arr[8];   //存储不同界面的数组
+ 100   1          unsigned char i;    // 循环显示值
+ 101   1          unsigned char modle = KEY_ALL(); // 获取当前界面模式（含默认值）
+ 102   1          
+ 103   1          // 初始化显示数组为全灭，避免乱码
+ 104   1          for(i=0; i<8; i++){
+ 105   2              dat_Arr[i] = 13;
+ 106   2          }
+ 107   1      
+ 108   1          if(modle == 1){ // 时间界面
+ 109   2              Time_Show(); // 每次都读取最新时间
+ 110   2              for(i=0; i<8; i++){
+ 111   3                  dat_Arr[i] = Time_Arr[i];
+ 112   3              }
+ 113   2              LED(LED4_Password ? LED_Value[3] : LED_Value[0]);
+ 114   2          } 
+ 115   1              else if(modle == 2){ // 输入界面
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/23/2026 15:16:50 PAGE 3   
+
+ 116   2              Scanf_Show();
+ 117   2              for(i=0; i<8; i++){
+ 118   3                  dat_Arr[i] = Scanf_Arr[i];
+ 119   3              }
+ 120   2              LED(LED4_Password ? LED_Value[4] : LED_Value[1]);
+ 121   2          } 
+ 122   1              else if(modle == 3){ // 记录界面
+ 123   2              Record_Show();
+ 124   2              for(i=0; i<8; i++){
+ 125   3                  dat_Arr[i] = Record_Arr[i];
+ 126   3              }
+ 127   2              LED(LED4_Password ? LED_Value[5] : LED_Value[2]);
+ 128   2          } 
+ 129   1              else if(modle == 4){ // 清除界面
+ 130   2              Scanf_Delete();
+ 131   2              for(i=0; i<8; i++){
+ 132   3                  dat_Arr[i] = Scanf_Arr[i];
+ 133   3              }
+ 134   2              LED(LED_Value[1]);
+ 135   2              LED4_Password = 0; // 清除后重置标志
+ 136   2          }
+ 137   1      
+ 138   1          // 数码管扫描显示
+ 139   1          for(i=0; i<8; i++){
+ 140   2              SEG(0xFF); // 消影
+ 141   2              COM(0x00); // 关闭所有位
+ 142   2              COM(1 << com); // 选通当前位
+ 143   2              dat = LED_Display_Value[dat_Arr[i]];
+ 144   2              SEG(dat); // 输出段码
+ 145   2              com++;
+ 146   2          }
+ 147   1          // 显示完成后关闭所有位和段，消影
+ 148   1              com = 0;
+ 149   1          SEG(0xFF);
+ 150   1          COM(0x00);
+ 151   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    616    ----
+   CONSTANT SIZE    =     14    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     26      19
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

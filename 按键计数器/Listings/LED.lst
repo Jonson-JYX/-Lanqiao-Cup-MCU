@@ -1,0 +1,34 @@
+C51 COMPILER V9.60.7.0   LED                                                               01/21/2026 19:01:20 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN .\Objects\LED.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LED.l
+                    -st) OBJECT(.\Objects\LED.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Delay.h"
+   3          #include "Common.h"
+   4          
+   5          //LEDÏÔÊ¾º¯Êý
+   6          void LED_Show(){
+   7   1              LED(0xFE);
+   8   1              Delay2000ms();
+   9   1              LED(0xFF);
+  10   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     32    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

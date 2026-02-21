@@ -1,0 +1,158 @@
+C51 COMPILER V9.60.7.0   KEY                                                               01/21/2026 19:01:20 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\Key.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Key.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Key.l
+                    -st) OBJECT(.\Objects\Key.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Delay.h"
+   3          #include "Common.h"
+   4          #include "LED.h"
+   5          #include "LED_Display.h"
+   6          
+   7          sbit S4 = P3^3;
+   8          sbit S5 = P3^2;
+   9          sbit S6 = P3^1;
+  10          sbit S7 = P3^0;
+  11          
+  12          bit password = 0;
+  13          bit s6_trigger = 0;     // S6触发标志：1=需要同步亮灯/显示
+  14          unsigned int s6_timer = 0; // 计时变量（ms），到2000ms后关闭
+  15          unsigned char num = 0;
+  16          
+  17          
+  18          //按键扫描函数
+  19          unsigned char Key_Scan(){
+  20   1              if(S4 == 0){
+  21   2                      Delay500us(); 
+  22   2                      if(S4 == 0){
+  23   3                              while(S4 == 0); 
+  24   3                              return 1;
+  25   3                      }
+  26   2              }
+  27   1              if(S5 == 0){
+  28   2                      Delay500us(); 
+  29   2                      if(S5 == 0){
+  30   3                              while(S5 == 0); 
+  31   3                              return 2;
+  32   3                      }
+  33   2              }
+  34   1              if(S6 == 0){
+  35   2                      Delay500us(); 
+  36   2                      if(S6 == 0){
+  37   3                              while(S6 == 0); 
+  38   3                              return 3;
+  39   3                      }
+  40   2              }
+  41   1              if(S7 == 0){
+  42   2                      Delay500us(); 
+  43   2                      if(S7 == 0){
+  44   3                              while(S7 == 0); 
+  45   3                              return 4;
+  46   3                      }
+  47   2              }
+  48   1              return 0;
+  49   1      }
+  50          
+  51          //返回计数器的数字
+  52          unsigned char Number(){
+  53   1              unsigned char key = Key_Scan();
+  54   1          
+C51 COMPILER V9.60.7.0   KEY                                                               01/21/2026 19:01:20 PAGE 2   
+
+  55   1          // S7：锁定/解锁逻辑
+  56   1          if(key == 4){
+  57   2              password = !password;          // 切换锁定状态
+  58   2              if(password){
+  59   3                  LED(0x7F);  // L8点亮（P0.7=0，0x7F=0111 1111）
+  60   3              }else{
+  61   3                  LED(0xFF);  // L8熄灭（所有LED灭）
+  62   3              }
+  63   2              return num;
+  64   2          }
+  65   1          
+  66   1          // 锁定状态下，S4-S6失效
+  67   1          if(password){
+  68   2              return num;
+  69   2          }
+  70   1          
+  71   1          // 解锁状态下，处理S4-S6
+  72   1          switch (key){
+  73   2              case 1:  // S4：加1
+  74   2                              if(num < 100) {
+  75   3                                      num++;
+  76   3                              }
+  77   2                  break;
+  78   2              case 2:  // S5：减1（防止负数）
+  79   2                  if(num > 0){
+  80   3                      num--;
+  81   3                  }
+  82   2                  break;
+  83   2              case 3:  // S6：清零 + L1亮2s
+  84   2                  num = 0;
+  85   2                              s6_trigger = 1;    // 标记需要同步显示/亮灯
+  86   2                  s6_timer = 0;      // 计时清零
+  87   2                  break;
+  88   2          }
+  89   1          return num;
+  90   1      }
+  91          
+  92          void Timer0_Init(void)
+  93          {
+  94   1          TMOD &= 0xF0;  // 清空Timer0模式
+  95   1          TMOD |= 0x01;  // 设置为16位自动重装模式
+  96   1          TL0 = 0x66;    // 初值低8位
+  97   1          TH0 = 0xFC;    // 初值高8位
+  98   1          TF0 = 0;       // 清除溢出标志
+  99   1          TR0 = 1;       // 启动Timer0
+ 100   1          ET0 = 1;       // 使能Timer0中断
+ 101   1          EA = 1;        // 开启总中断
+ 102   1      }
+ 103          
+ 104          // Timer0中断服务函数（1ms执行一次）
+ 105          void Timer0_ISR(void) interrupt 1
+ 106          {
+ 107   1          TL0 = 0x66;    // 重新加载初值（避免计时偏差）
+ 108   1          TH0 = 0xFC;
+ 109   1          
+ 110   1          // 处理S6触发的同步显示/亮灯
+ 111   1          if(s6_trigger == 1)
+ 112   1          {
+ 113   2              s6_timer++;          // 计时+1ms
+ 114   2              LED_Display_Show();  // 持续刷新数码管显示0
+ 115   2              LED(0xFE);           // 持续点亮L1（0xFE=11111110）
+ 116   2              
+C51 COMPILER V9.60.7.0   KEY                                                               01/21/2026 19:01:20 PAGE 3   
+
+ 117   2              // 计时达到2000ms（2秒），关闭同步
+ 118   2              if(s6_timer >= 300)
+ 119   2              {
+ 120   3                  s6_trigger = 0;  // 清除触发标志
+ 121   3                  s6_timer = 0;    // 计时清零
+ 122   3                  LED(0xFF);       // 关闭LED灯
+ 123   3              }
+ 124   2          }
+ 125   1          else
+ 126   1          {
+ 127   2              // 非S6触发时，正常刷新数码管（显示当前num）
+ 128   2              LED_Display_Show();
+ 129   2          }
+ 130   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    299    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      3    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,64 @@
+C51 COMPILER V9.60.7.0   DELAY                                                             12/12/2025 14:38:40 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Objects\delay.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE delay.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\del
+                    -ay.lst) OBJECT(.\Objects\delay.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "delay.h"
+   3          #include "intrins.h"
+   4          
+   5          //100Œ¢√Î—” ±∫Ø ˝
+   6          void Delay100us()               //@12.000MHz
+   7          {
+   8   1              unsigned char i;
+   9   1      
+  10   1              _nop_();
+  11   1              i = 47;
+  12   1              while (--i);
+  13   1      }
+  14          
+  15          //100∫¡√Î—” ±∫Ø ˝
+  16          void Delay100ms()               //@12.000MHz
+  17          {
+  18   1              unsigned char i, j;
+  19   1      
+  20   1              i = 195;
+  21   1              j = 138;
+  22   1              do
+  23   1              {
+  24   2                      while (--j);
+  25   2              } while (--i);
+  26   1      }
+  27          
+  28          //10∫¡√Î—” ±∫Ø ˝
+  29          void Delay10ms()                //@12.000MHz
+  30          {
+  31   1              unsigned char i, j;
+  32   1      
+  33   1              i = 20;
+  34   1              j = 113;
+  35   1              do
+  36   1              {
+  37   2                      while (--j);
+  38   2              } while (--i);
+  39   1      }
+  40          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     24    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

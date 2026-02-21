@@ -1,0 +1,75 @@
+C51 COMPILER V9.60.7.0   UART                                                              02/01/2026 12:36:26 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\Uart.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Uart.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Uart
+                    -.lst) OBJECT(.\Objects\Uart.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "DS18B20.h"
+   3          
+   4          //温度发送数组
+   5          unsigned char temp_send [12];
+   6          unsigned char temp_dat[] = {'0','1','2','3','4','5','6','7','8','9'};
+   7          
+   8          void Uart_Init(void)    //9600bps@12.000MHz
+   9          {
+  10   1              SCON = 0x50;            //8位数据,可变波特率
+  11   1              AUXR |= 0x40;           //定时器时钟1T模式
+  12   1              AUXR &= 0xFE;           //串口1选择定时器1为波特率发生器
+  13   1              TMOD &= 0x0F;           //设置定时器模式
+  14   1              TL1 = 0xC7;                     //设置定时初始值
+  15   1              TH1 = 0xFE;                     //设置定时初始值
+  16   1              ET1 = 0;                        //禁止定时器中断
+  17   1              TR1 = 1;                        //定时器1开始计时
+  18   1      }
+  19          
+  20          //串口发送字符串函数
+  21          void uart_sendstring(unsigned char *str){
+  22   1              unsigned char *p;
+  23   1              p = str;
+  24   1              while(*p != '\0'){
+  25   2                      SBUF = *p;
+  26   2                      while(TI == 0);
+  27   2                      TI = 0;
+  28   2                      p++;
+  29   2              }
+  30   1      }
+  31          
+  32          //接收温度转化函数
+  33          void Send_Temp(){
+  34   1              float temp = Temp_Value();
+  35   1              unsigned int temp_value = (unsigned int)(temp * 100);
+  36   1              temp_send [0] = 'T';
+  37   1              temp_send [1] = 'e';
+  38   1              temp_send [2] = 'm';
+  39   1              temp_send [3] = 'p';
+  40   1              temp_send [4] = ':';
+  41   1              temp_send [5] = temp_dat[temp_value / 1000];
+  42   1              temp_send [6] = temp_dat[temp_value % 1000 / 100];
+  43   1              temp_send [7] = '.';
+  44   1              temp_send [8] = temp_dat[temp_value % 100 / 10];
+  45   1              temp_send [9] = temp_dat[temp_value % 10];
+  46   1              temp_send [10] = 'C';
+  47   1              temp_send [11] = '\0';
+  48   1              uart_sendstring(temp_send);
+  49   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    207    ----
+   CONSTANT SIZE    =   ----    ----
+C51 COMPILER V9.60.7.0   UART                                                              02/01/2026 12:36:26 PAGE 2   
+
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     22       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

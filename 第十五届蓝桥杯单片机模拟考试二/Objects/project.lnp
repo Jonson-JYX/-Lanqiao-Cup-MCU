@@ -1,0 +1,11 @@
+".\Objects\main.obj",
+".\Objects\LED_Display.obj",
+".\Objects\LED.obj",
+".\Objects\DS18B20.obj",
+".\Objects\KEY.obj",
+".\Objects\PCF8591.obj",
+".\Objects\Delay.obj",
+".\Objects\IIC.obj",
+".\Objects\OneWire.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 

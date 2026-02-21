@@ -1,0 +1,54 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              02/01/2026 12:36:26 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "LED_Display.h"
+   3          #include "DS18B20.h"
+   4          #include "Delay.h"
+   5          #include "Onewire.h"
+   6          #include "Uart.h"
+   7          #include "Key.h"
+   8          #include "Common.h"
+   9          
+  10          void Init_MCU(){
+  11   1              LED(0xFF);
+  12   1              COM(0xFF);
+  13   1              BUZ(0x00);
+  14   1              SEG(0xFF);
+  15   1      }
+  16          
+  17          void main(){
+  18   1              Init_MCU();
+  19   1              Uart_Init();
+  20   1              while(1){
+  21   2                      Key();
+  22   2                      Temp_Change();
+  23   2                      LED_Display_Show();
+  24   2                      LED_Display_Show();
+  25   2                      LED_Display_Show();
+  26   2                      LED_Display_Show();
+  27   2                      LED_Display_Show();
+  28   2                      LED_Display_Show();
+  29   2              }
+  30   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     89    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,109 @@
+C51 COMPILER V9.60.7.0   BEEP                                                              01/19/2026 14:25:58 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE BEEP
+OBJECT MODULE PLACED IN .\Objects\BEEP.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BEEP.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\BEEP
+                    -.lst) OBJECT(.\Objects\BEEP.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Common.h"
+   3          #include "DS1302.h"
+   4          #include "Delay.h"
+   5          #include "BEEP.h"
+   6          #include "Uart.h"
+   7          
+   8          bit beep_flag = 0;        
+   9          bit beep_running = 0;     
+  10          #define BEEP_DURATION 20  
+  11          unsigned char beep_cnt = 0; // 计数器
+  12          
+  13          // 定时器0相关1ms中断
+  14          unsigned int beep_timer = 0; // 毫秒级计时变量
+  15          bit beep_2s_flag = 0;        // 2秒计时完成标志
+  16          
+  17          // 声明外部变量
+  18          extern bit timer_time_set;
+  19          
+  20          // 定时器0初始化函数（1ms中断，12MHz晶振）
+  21          void Timer0_Init(void) {
+  22   1          TMOD &= 0xF0;  // 清空定时器0模式位
+  23   1          TMOD |= 0x01;  // 定时器0工作在模式1（16位）
+  24   1          TL0 = 0x18;    // 1ms定时初值（12MHz）
+  25   1          TH0 = 0xFC;    // 65536 - 1000 = 64536 → 0xFC18
+  26   1          TF0 = 0;       // 清除溢出标志
+  27   1          TR0 = 1;       // 启动定时器0
+  28   1          ET0 = 1;       // 使能定时器0中断
+  29   1          EA = 1;        // 开启总中断
+  30   1      }
+  31          
+  32          // 定时器0中断服务函数（1ms触发一次）
+  33          void Timer0_ISR(void) interrupt 1 {
+  34   1          TL0 = 0x18;    // 重新加载初值，保证计时精度
+  35   1          TH0 = 0xFC;
+  36   1          
+  37   1          // 仅在蜂鸣器运行时累加计时
+  38   1          if(beep_running) {
+  39   2              beep_timer++;
+  40   2              if(beep_timer >= 2000) { // 累计2000ms（2秒）
+  41   3                  beep_2s_flag = 1;    // 置2秒完成标志
+  42   3                  beep_timer = 0;      // 重置计时
+  43   3              }
+  44   2          }
+  45   1      }
+  46          
+  47          void BEEP(){
+  48   1          unsigned char *time_rtc = ReadRTC(); 
+  49   1          unsigned char *timer_time = get_time_array(); 
+  50   1          
+  51   1          // 时间转换逻辑
+  52   1          unsigned char curr_hour = time_rtc[0] * 10 + time_rtc[1];
+  53   1          unsigned char curr_min = time_rtc[3] * 10 + time_rtc[4];
+  54   1          unsigned char curr_sec = time_rtc[6] * 10 + time_rtc[7];
+C51 COMPILER V9.60.7.0   BEEP                                                              01/19/2026 14:25:58 PAGE 2   
+
+  55   1          
+  56   1          unsigned char timer_hour = timer_time[0];
+  57   1          unsigned char timer_min = timer_time[1];
+  58   1          unsigned char timer_sec = timer_time[2];
+  59   1          
+  60   1          // 时间匹配触发逻辑
+  61   1          if(timer_time_set && !beep_running && 
+  62   1             (curr_hour == timer_hour) && (curr_min == timer_min) && (curr_sec == timer_sec))
+  63   1          {
+  64   2              beep_flag = 1;
+  65   2              beep_running = 1;
+  66   2              beep_cnt = 0;
+  67   2              timer_time_set = 0;
+  68   2          }
+  69   1                 
+  70   1          // 判断2秒完成标志
+  71   1          if(beep_flag){
+  72   2              BUZ(0xFF); //打开蜂鸣器
+  73   2              
+  74   2              // 检测2秒计时完成，而非阻塞延时
+  75   2              if(beep_2s_flag) {
+  76   3                  beep_flag = 0;
+  77   3                  beep_running = 0;
+  78   3                  beep_2s_flag = 0; // 清空完成标志
+  79   3                  BUZ(0x00);       // 关闭蜂鸣器
+  80   3                  beep_cnt = 0;    // 重置计数器
+  81   3              }
+  82   2          }
+  83   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    241    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      3       8
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

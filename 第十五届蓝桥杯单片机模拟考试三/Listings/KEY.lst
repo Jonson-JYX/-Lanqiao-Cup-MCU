@@ -1,0 +1,136 @@
+C51 COMPILER V9.60.7.0   KEY                                                               02/17/2026 15:18:27 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\KEY.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE KEY.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\KEY.l
+                    -st) OBJECT(.\Objects\KEY.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Delay.h"
+   3          #include "PCF8591.h"
+   4          
+   5          unsigned char S4_cnt = 0;
+   6          unsigned char S5_cnt = 0;
+   7          unsigned char Parameter_min = 10;
+   8          unsigned char Parameter_max = 60;
+   9          unsigned char num = 0;
+  10          
+  11          unsigned char Key_Scan(){
+  12   1          unsigned char key = 0;
+  13   1          P33 = 0;P32 = 1;
+  14   1          if(P44 == 0){   //S4
+  15   2              Delay100ms();
+  16   2              while(P44 == 0){
+  17   3                 key = 1;
+  18   3              }
+  19   2          }
+  20   1          if(P42 == 0){   //S8
+  21   2              Delay100ms();
+  22   2              while(P42 == 0){
+  23   3                  key = 2;
+  24   3              }
+  25   2          }
+  26   1          P33 = 1;P32 = 0;
+  27   1          if(P44 == 0){   //S5
+  28   2              Delay100ms();
+  29   2              while(P44 == 0){
+  30   3                 key = 3;
+  31   3              }
+  32   2          }
+  33   1          if(P42 == 0){   //S9
+  34   2              Delay100ms();
+  35   2              while(P42 == 0){
+  36   3                  key = 4;
+  37   3              }
+  38   2          }
+  39   1          return key;
+  40   1      }
+  41          
+  42          void Key_login(){
+  43   1          unsigned char key = Key_Scan();
+  44   1          switch(key){
+  45   2              case 1:
+  46   2                  S4_cnt = (S4_cnt + 1) % 3;
+  47   2                  if(S4_cnt % 3 != 1){
+  48   3                      S5_cnt = 0;
+  49   3                  }
+  50   2                  break;
+  51   2              case 2:
+  52   2                  if(S5_cnt % 2 == 0 && S4_cnt % 3 == 1){
+  53   3                      if(Parameter_min < 50){
+  54   4                       Parameter_min += 10;
+C51 COMPILER V9.60.7.0   KEY                                                               02/17/2026 15:18:27 PAGE 2   
+
+  55   4                      }
+  56   3                  }
+  57   2                  if(S5_cnt % 2 == 1 && S4_cnt % 3 == 1){
+  58   3                      if(ADC_value >= 0.0 && ADC_value < 1.0){
+  59   4                          Parameter_min = 0;
+  60   4                      }
+  61   3                      else if(ADC_value >= 1.0 && ADC_value < 2.0){
+  62   4                          Parameter_min = 10;
+  63   4                      }
+  64   3                      else if(ADC_value >= 2.0 && ADC_value < 3.0){
+  65   4                          Parameter_min = 20;
+  66   4                      }
+  67   3                      else if(ADC_value >= 3.0 && ADC_value < 4.0){
+  68   4                          Parameter_min = 30;
+  69   4                      }
+  70   3                      else if(ADC_value >= 4.0 && ADC_value <= 5.0){
+  71   4                          Parameter_min = 40;
+  72   4                      }
+  73   3                  }
+  74   2                  break;
+  75   2              case 3:
+  76   2                  if(S4_cnt % 3 == 1){
+  77   3                      S5_cnt = (S5_cnt + 1) % 2;
+  78   3                  }
+  79   2                  if(S4_cnt % 3 == 2){
+  80   3                      num = 0;
+  81   3                  }
+  82   2                  break;
+  83   2              case 4:
+  84   2                  if(S5_cnt % 2 == 0 && S4_cnt % 3 == 1){
+  85   3                      if(Parameter_max < 90){
+  86   4                          Parameter_max += 10;
+  87   4                      }
+  88   3                  }
+  89   2                  if(S5_cnt % 2 == 1 && S4_cnt % 3 == 1){
+  90   3                      if(ADC_value >= 0.0 && ADC_value < 1.0){
+  91   4                          Parameter_max = 50;
+  92   4                      }
+  93   3                      else if(ADC_value >= 1.0 && ADC_value < 2.0){
+  94   4                          Parameter_max = 60;
+  95   4                      }
+  96   3                      else if(ADC_value >= 2.0 && ADC_value < 3.0){
+  97   4                          Parameter_max = 70;
+  98   4                      }
+  99   3                      else if(ADC_value >= 3.0 && ADC_value < 4.0){
+ 100   4                          Parameter_max = 80;
+ 101   4                      }
+ 102   3                      else if(ADC_value >= 4.0 && ADC_value <= 5.0){
+ 103   4                          Parameter_max = 90;
+ 104   4                      }
+ 105   3                  }
+ 106   2                  break;
+ 107   2          }
+ 108   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    706    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5       1
+C51 COMPILER V9.60.7.0   KEY                                                               02/17/2026 15:18:27 PAGE 3   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,10 @@
+".\Objects\main.obj",
+".\Objects\Distance.obj",
+".\Objects\KEY.obj",
+".\Objects\Uart.obj",
+".\Objects\LED.obj",
+".\Objects\LED_Display.obj",
+".\Objects\Delay.obj",
+".\Objects\Timer.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 

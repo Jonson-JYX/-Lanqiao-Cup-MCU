@@ -1,0 +1,77 @@
+C51 COMPILER V9.60.7.0   DISPLAYS                                                          11/16/2025 19:39:00 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DISPLAYS
+OBJECT MODULE PLACED IN .\Objects\displays.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE displays.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\
+                    -displays.lst) OBJECT(.\Objects\displays.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "displays.h"
+   3          #include "common.h"
+   4          
+   5          //共阳数码管段码表
+   6          code unsigned char Seg_Table[17][8] = {
+   7                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xC0,
+   8                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xF9,
+   9                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xA4,
+  10                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xB0,
+  11                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x99,
+  12                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x92,
+  13                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x82,
+  14                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xF8,
+  15                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x80,
+  16                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x90,
+  17                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xF9,0xC0,
+  18                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xF9,0xF9,
+  19                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xF9,0xA4,
+  20                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xF9,0xB0,
+  21                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xF9,0x99,
+  22                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xF9,0x92,
+  23                  0xC8,0xFF,0xFF,0xFF,0xFF,0xFF,0xF9,0x82
+  24          };
+  25          
+  26          //数码管显示函数
+  27          void Seg_Display(unsigned char number){
+  28   1              unsigned char com = 0;          //位选移动变量
+  29   1              unsigned char i;                        //数码管循环显示变量
+  30   1              unsigned char num = number;     //定义获取第几组数据(需要传参)
+  31   1              unsigned char dat;                      //定义存储数据的缓冲区
+  32   1              //消影
+  33   1              SEG(0xFF);
+  34   1              //循环显示八位效果
+  35   1              for(i = 0 ;i < 8 ;i++){
+  36   2                      //消影
+  37   2                      SEG(0xFF);
+  38   2                      //位选移动一位
+  39   2                      COM(1<<com);
+  40   2                      //将对应数据放入缓冲区
+  41   2                      dat = Seg_Table[num][i];
+  42   2                      //显示对应数码管的数据调用宏定义（common.h）
+  43   2                      SEG(dat);
+  44   2                      //位选加一
+  45   2                      com++;
+  46   2              }
+  47   1              //循环后位选归零
+  48   1              com = 0;
+  49   1              //关闭所有位选
+  50   1              COM(0x00);
+  51   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.60.7.0   DISPLAYS                                                          11/16/2025 19:39:00 PAGE 2   
+
+   CODE SIZE        =    116    ----
+   CONSTANT SIZE    =    136    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,71 @@
+C51 COMPILER V9.60.7.0   LED                                                               02/13/2026 15:15:28 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN .\Objects\LED.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LED.l
+                    -st) OBJECT(.\Objects\LED.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Common.h"
+   3          #include "Distance.h"
+   4          #include "KEY.h"
+   5          #include "Timer.h"
+   6          
+   7          bit LED1 = 0;
+   8          bit LED2 = 0;
+   9          
+  10          void LED_login(){
+  11   1          if(S4_cnt % 2 == 0){
+  12   2              if(sound_dat > sound_value){
+  13   3                  if(LED_cnt == 3){
+  14   4                      if(LED1 == 0){
+  15   5                          LED(0xFA);
+  16   5                          LED1 = 1;
+  17   5                      }
+  18   4                      else{
+  19   5                          LED(0xFE);
+  20   5                          LED1 = 0;
+  21   5                      }
+  22   4                  }
+  23   3              }
+  24   2              else{
+  25   3                  LED(0xFE);
+  26   3              }
+  27   2          }
+  28   1          if(S4_cnt % 2 == 1){
+  29   2              if(sound_dat > sound_value){
+  30   3                  if(LED_cnt == 3){
+  31   4                      if(LED2 == 0){
+  32   5                          LED(0xF9);
+  33   5                          LED2 = 1;
+  34   5                      }
+  35   4                      else{
+  36   5                          LED(0xFD);
+  37   5                          LED2 = 0;
+  38   5                      }
+  39   4                  }
+  40   3              }
+  41   2              else{
+  42   3                  LED(0xFD);
+  43   3              }
+  44   2          }
+  45   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    165    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   LED                                                               02/13/2026 15:15:28 PAGE 2   
+
+   BIT SIZE         =      2    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,49 @@
+C51 COMPILER V9.60.7.0   DS18B20                                                           02/12/2026 16:16:31 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DS18B20
+OBJECT MODULE PLACED IN .\Objects\DS18B20.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE DS18B20.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\D
+                    -S18B20.lst) OBJECT(.\Objects\DS18B20.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Onewire.h"
+   3          
+   4          int temp_now = 0;
+   5          
+   6          float Temp_Value(){
+   7   1          float temp_value;
+   8   1          unsigned char high,low;
+   9   1          init_ds18b20();
+  10   1          Write_DS18B20(0xCC);
+  11   1          Write_DS18B20(0x44);
+  12   1          init_ds18b20();
+  13   1          Write_DS18B20(0xCC);
+  14   1          Write_DS18B20(0xBE);
+  15   1          low = Read_DS18B20();
+  16   1          high = Read_DS18B20();
+  17   1          temp_value = (high<<8) | low;
+  18   1          return temp_value * 0.0625;
+  19   1      
+  20   1      }
+  21          
+  22          void Read_Temp(){
+  23   1          float temp = Temp_Value();
+  24   1          temp_now = (int)(temp * 10);
+  25   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    105    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,57 @@
+C51 COMPILER V9.60.7.0   PCF8591                                                           02/19/2026 13:53:33 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PCF8591
+OBJECT MODULE PLACED IN .\Objects\PCF8591.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE PCF8591.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\P
+                    -CF8591.lst) OBJECT(.\Objects\PCF8591.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "IIC.h"
+   3          
+   4          unsigned char ADC_value = 0;
+   5          unsigned char Read_ADC(){
+   6   1          unsigned char dat = 0;
+   7   1          I2CStart();
+   8   1          I2CSendByte(0x90);
+   9   1          I2CWaitAck();
+  10   1          I2CSendByte(0x03);
+  11   1          I2CWaitAck();
+  12   1          I2CStop();
+  13   1          I2CStart();
+  14   1          I2CSendByte(0x91);
+  15   1          I2CWaitAck();
+  16   1          dat = I2CReceiveByte();
+  17   1          I2CWaitAck();
+  18   1          I2CStop();
+  19   1          return dat;
+  20   1      }
+  21          
+  22          void ADC_login(){
+  23   1          unsigned char dat = Read_ADC();
+  24   1          if(dat <= 51){
+  25   2              ADC_value = 10;
+  26   2          }
+  27   1          else if(dat >= 204){
+  28   2              ADC_value = 90;
+  29   2          }
+  30   1          else{
+  31   2              ADC_value = (unsigned char)((float)dat * 80.0 / 153.0 - 50.0 / 3.0);
+  32   2          }
+  33   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    116    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

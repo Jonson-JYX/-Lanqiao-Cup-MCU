@@ -1,0 +1,137 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/21/2026 16:13:58 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "LED_Display.h"
+   3          #include "Common.h"
+   4          #include "DS1302.h"
+   5          #include "Delay.h"
+   6          #include "KEY.h"
+   7          
+   8          // 创建数码管段码表数组
+   9          code unsigned char LED_Display_NUM [12]= {
+  10                  0xC0,//0
+  11                  0xF9,//1
+  12                  0xA4,//2
+  13                  0xB0,//3
+  14                  0x99,//4
+  15                  0x92,//5
+  16                  0x82,//6
+  17                  0xF8,//7
+  18                  0x80,//8
+  19                  0x90,//9
+  20                  0xBF,//-
+  21                  0xFF //全灭
+  22          };
+  23          
+  24          unsigned char dat1[8];
+  25          unsigned char dat2[8];
+  26          unsigned char dat3[8];
+  27          
+  28          //时间转化函数
+  29          void Time_Change(){
+  30   1              unsigned char *p_rtc = ReadRTC(); //接收参数
+  31   1              //模式一
+  32   1              dat1[0] = p_rtc[0];
+  33   1              dat1[1] = p_rtc[1];
+  34   1              dat1[2] = p_rtc[2];
+  35   1              dat1[3] = p_rtc[3];
+  36   1              dat1[4] = p_rtc[4];
+  37   1              dat1[5] = p_rtc[5];
+  38   1              dat1[6] = p_rtc[6];
+  39   1              dat1[7] = p_rtc[7];
+  40   1              
+  41   1              //模式二
+  42   1              dat2[0] = 11;
+  43   1              dat2[1] = 11;
+  44   1              dat2[2] = 11;
+  45   1              dat2[3] = p_rtc[0];
+  46   1              dat2[4] = p_rtc[1];
+  47   1              dat2[5] = p_rtc[2];
+  48   1              dat2[6] = p_rtc[3];
+  49   1              dat2[7] = p_rtc[4];
+  50   1              
+  51   1              //模式三
+  52   1              dat3[0] = 11;
+  53   1              dat3[1] = 11;
+  54   1              dat3[2] = 11;
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/21/2026 16:13:58 PAGE 2   
+
+  55   1              dat3[3] = 11;
+  56   1              dat3[4] = 11;
+  57   1              dat3[5] = 11;
+  58   1              dat3[6] = p_rtc[6];
+  59   1              dat3[7] = p_rtc[7];
+  60   1      }
+  61          
+  62          
+  63          //数码管显示函数
+  64          void LED_Dispaly_Show(){
+  65   1              unsigned char com = 0;//位选移动变量
+  66   1              unsigned char i = 0;  //数码管循环显示变量
+  67   1              unsigned char temp_dat;   //临时存储区
+  68   1              unsigned char dat[8];
+  69   1              unsigned char j = 0;
+  70   1              unsigned char num = Key_Scan();
+  71   1              
+  72   1              Time_Change();
+  73   1              switch(num){
+  74   2                      case 1: // 时分秒
+  75   2                              for(j=0; j<8; j++) {
+  76   3                                      dat[j] = dat1[j];
+  77   3                              }
+  78   2                              break;
+  79   2                      case 2: // 时分
+  80   2                              for(j=0; j<8; j++) {
+  81   3                                      dat[j] = dat2[j];
+  82   3                              }
+  83   2                              break;
+  84   2                      case 3: // 秒
+  85   2                              for(j=0; j<8; j++) {
+  86   3                                      dat[j] = dat3[j];
+  87   3                              }
+  88   2                              break;
+  89   2                      default: // 默认时分秒
+  90   2                              for(j=0; j<8; j++) {
+  91   3                                      dat[j] = dat1[j];
+  92   3                              }
+  93   2                              break;
+  94   2              }
+  95   1              
+  96   1              SEG(0xFF);
+  97   1              //循环显示8位数码管
+  98   1              for(i = 0;i < 8;i++){
+  99   2                      SEG(0xFF);
+ 100   2                      COM(1<<com);    //位选移动一位
+ 101   2                      temp_dat = LED_Display_NUM[dat[i]];
+ 102   2                      SEG(temp_dat);//将缓冲区数据放入SEG显示函数
+ 103   2                      Delay500us();
+ 104   2                      com++;  //      位选加一        
+ 105   2              }
+ 106   1              com = 0;        //      循环结束后位选归零
+ 107   1              COM(0x00);  //  关闭位选
+ 108   1              SEG(0xFF);
+ 109   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    387    ----
+   CONSTANT SIZE    =     12    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/21/2026 16:13:58 PAGE 3   
+
+   DATA SIZE        =     24      13
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

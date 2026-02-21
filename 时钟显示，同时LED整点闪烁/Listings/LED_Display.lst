@@ -1,0 +1,97 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/18/2026 22:32:27 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "LED_Display.h"
+   3          #include "Common.h"
+   4          #include "DS1302.h"
+   5          #include "Delay.h"
+   6          #include "LED.h"
+   7          
+   8          // 创建数码管段码表数组
+   9          code unsigned char LED_Display_NUM [11]= {
+  10                  0xC0,//0
+  11                  0xF9,//1
+  12                  0xA4,//2
+  13                  0xB0,//3
+  14                  0x99,//4
+  15                  0x92,//5
+  16                  0x82,//6
+  17                  0xF8,//7
+  18                  0x80,//8
+  19                  0x90,//9
+  20                  0xBF //-
+  21          };
+  22          
+  23          // 整点LED亮标志位 + 计时变量
+  24          bit hour_flag = 0;          // 整点标志
+  25          unsigned int hour_led_cnt = 0; // LED点亮计时（控制1秒亮灯）
+  26          #define HOUR_LED_MAX_CNT 30 
+  27          
+  28          //数码管显示函数
+  29          void LED_Dispaly_Show(){
+  30   1              unsigned char com = 0;//位选移动变量
+  31   1              unsigned char i = 0;  //数码管循环显示变量
+  32   1              unsigned char j = 0;  //存储时间循环变量
+  33   1              unsigned char *p_rtc = ReadRTC(); //接收参数
+  34   1              unsigned char dat[8]; //定义缓冲区
+  35   1              unsigned char dat1;       //临时存储区
+  36   1      
+  37   1              for(j = 0;j < 8;j++){
+  38   2                      dat[j] = p_rtc[j];
+  39   2              }
+  40   1              
+  41   1              if(dat[3]==0&&dat[4]==0&&dat[6]==0&&dat[7]==0){
+  42   2                      hour_flag = 1;    // 触发整点LED亮
+  43   2                      hour_led_cnt = 0; // 重置计时;
+  44   2              }
+  45   1              
+  46   1              // 整点LED控制：非阻塞式处理
+  47   1              if(hour_flag){
+  48   2                      LED(LED_Value[0]); // 点亮LED
+  49   2                      hour_led_cnt++;
+  50   2                      // 计时达到1秒后，熄灭LED并清除标志
+  51   2                      if(hour_led_cnt >= HOUR_LED_MAX_CNT){
+  52   3                              LED(0xFF);
+  53   3                              hour_flag = 0;
+  54   3                              hour_led_cnt = 0;
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/18/2026 22:32:27 PAGE 2   
+
+  55   3                      }
+  56   2              }
+  57   1              
+  58   1              SEG(0xFF);
+  59   1              //循环显示8位数码管
+  60   1              for(i = 0;i < 8;i++){
+  61   2                      SEG(0xFF);
+  62   2                      COM(1<<com);    //位选移动一位
+  63   2                      dat1 = LED_Display_NUM[dat[i]];
+  64   2                      SEG(dat1);//将缓冲区数据放入SEG显示函数
+  65   2                      Delay500us();
+  66   2                      com++;  //      位选加一        
+  67   2              }
+  68   1              com = 0;        //      循环结束后位选归零
+  69   1              COM(0x00);  //  关闭位选
+  70   1              SEG(0xFF);
+  71   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    250    ----
+   CONSTANT SIZE    =     11    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2      14
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

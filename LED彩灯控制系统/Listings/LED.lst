@@ -1,0 +1,100 @@
+C51 COMPILER V9.60.7.0   LED                                                               12/14/2025 01:50:11 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN .\Objects\LED.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LED.l
+                    -st) OBJECT(.\Objects\LED.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "LED.h"
+   3          #include "DELAY.h"
+   4          #include "COMMON.h"
+   5          
+   6          //模式一：LED闪烁表
+   7          code unsigned char LED_NUM1[8]={
+   8                  0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80
+   9          };
+  10          
+  11          //模式二：LED闪烁表
+  12          code unsigned char LED_NUM2[8]={
+  13                  0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01
+  14          };
+  15          
+  16          //模式三：LED闪烁表
+  17          code unsigned char LED_NUM3[4]={
+  18                  0x81,0x42,0x24,0x18
+  19          };
+  20          
+  21          //模式四：LED闪烁表
+  22          code unsigned char LED_NUM4[4]={
+  23                  0x18,0x24,0x42,0x81
+  24          };
+  25          
+  26          //LED显示函数
+  27          void LED_Show(unsigned char number){
+  28   1              //获取模式几
+  29   1              unsigned char num = number;
+  30   1              //数据缓冲区
+  31   1              unsigned char dat;
+  32   1              //循环变量
+  33   1              unsigned char i;
+  34   1              //初始化
+  35   1              LED(0xFF);
+  36   1              switch(num){
+  37   2                      case 1:
+  38   2                              for(i = 0 ;i < 8 ;i++){
+  39   3                                      dat = LED_NUM1[i];
+  40   3                                      LED(dat);
+  41   3                                      Delay(80000);
+  42   3                                      LED(0xFF);
+  43   3                                      Delay(80000);
+  44   3                              }
+  45   2                              break;
+  46   2                      case 2:
+  47   2                              for(i = 0 ;i < 8 ;i++){
+  48   3                                      dat = LED_NUM2[i];
+  49   3                                      LED(dat);
+  50   3                                      Delay(80000);
+  51   3                                      LED(0xFF);
+  52   3                                      Delay(80000);
+  53   3                              }
+  54   2                              break;
+C51 COMPILER V9.60.7.0   LED                                                               12/14/2025 01:50:11 PAGE 2   
+
+  55   2                      case 3:
+  56   2                              for(i = 0 ;i < 4 ;i++){
+  57   3                                      dat = LED_NUM3[i];
+  58   3                                      LED(dat);
+  59   3                                      Delay(90000);
+  60   3                                      LED(0xFF);
+  61   3                                      Delay(90000);
+  62   3                              }
+  63   2                              break;
+  64   2                      case 4:
+  65   2                              for(i = 0 ;i < 4 ;i++){
+  66   3                                      dat = LED_NUM4[i];
+  67   3                                      LED(dat);
+  68   3                                      Delay(90000);
+  69   3                                      LED(0xFF);
+  70   3                                      Delay(90000);
+  71   3                              }
+  72   2                              break;
+  73   2              }
+  74   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    270    ----
+   CONSTANT SIZE    =     24    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

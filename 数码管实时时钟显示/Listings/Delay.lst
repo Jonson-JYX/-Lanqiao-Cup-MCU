@@ -1,0 +1,70 @@
+C51 COMPILER V9.60.7.0   DELAY                                                             01/17/2026 14:04:28 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Objects\Delay.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Delay.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Del
+                    -ay.lst) OBJECT(.\Objects\Delay.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Delay.h"
+   3          #include "intrins.h"
+   4          
+   5          void Delay100ms()               //@12.000MHz
+   6          {
+   7   1              unsigned char i, j;
+   8   1      
+   9   1              i = 195;
+  10   1              j = 138;
+  11   1              do
+  12   1              {
+  13   2                      while (--j);
+  14   2              } while (--i);
+  15   1      }
+  16          
+  17          
+  18          void Delay500ms()               //@12.000MHz
+  19          {
+  20   1              unsigned char i, j, k;
+  21   1      
+  22   1              _nop_();
+  23   1              i = 4;
+  24   1              j = 205;
+  25   1              k = 187;
+  26   1              do
+  27   1              {
+  28   2                      do
+  29   2                      {
+  30   3                              while (--k);
+  31   3                      } while (--j);
+  32   2              } while (--i);
+  33   1      }
+  34          
+  35          void Delay500us()               //@12.000MHz
+  36          {
+  37   1              unsigned char i, j;
+  38   1              i = 6;
+  39   1              j = 93;
+  40   1              do
+  41   1              {
+  42   2                      while (--j);
+  43   2              } while (--i);
+  44   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     32    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.60.7.0   DELAY                                                             01/17/2026 14:04:28 PAGE 2   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

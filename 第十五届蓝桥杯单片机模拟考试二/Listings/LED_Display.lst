@@ -1,0 +1,199 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/24/2026 22:57:29 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Common.h"
+   3          #include "KEY.h"
+   4          #include "LED.h"
+   5          #include "DS18B20.h"
+   6          #include "PCF8591.h"
+   7          
+   8          // 段码表
+   9          code unsigned char Seg_Table[] = {
+  10              0xc0,       //0
+  11              0xf9,       //1
+  12              0xa4,       //2
+  13              0xb0,       //3
+  14              0x99,       //4
+  15              0x92,       //5
+  16              0x82,       //6
+  17              0xf8,       //7
+  18              0x80,       //8
+  19              0x90,       //9
+  20              0xc1,       //U
+  21              0xff,       //全灭
+  22          };
+  23          
+  24          // 显示数组初始化
+  25          unsigned char Temperature_Show_Arr[] = {1,11,11,11,11,11,11,11};  // 模式一（温度）
+  26          unsigned char Lighting_Show_Arr[]   = {2,11,11,11,11,11,11,11};  // 模式二（光照）
+  27          unsigned char Temperature_DAC_Arr[] = {10,11,11,11,11,11,11,11};  // DAC-温度
+  28          unsigned char Lighting_DAC_Arr[]   = {10,11,11,11,11,11,11,11};  // DAC-光照
+  29          unsigned char dat_arr[]             = {11,11,11,11,11,11,11,11};  // 最终显示数组
+  30          
+  31          // 温度数据解析（
+  32          void Temperature_dat_Receive(){
+  33   1          float temp_float = DS18B20_Read();
+  34   1          unsigned int dat_receive = temp_float * 10;
+  35   1          if(dat_receive >= 100){
+  36   2              Temperature_Show_Arr[5] = dat_receive/100;
+  37   2              Temperature_Show_Arr[6] = dat_receive%100/10;
+  38   2              Temperature_Show_Arr[7] = dat_receive%10;
+  39   2          }
+  40   1          else if(dat_receive >= 10 && dat_receive < 100){
+  41   2              Temperature_Show_Arr[5] = 11;
+  42   2              Temperature_Show_Arr[6] = dat_receive%100/10;
+  43   2              Temperature_Show_Arr[7] = dat_receive%10;
+  44   2          }
+  45   1          else if(dat_receive >= 0 && dat_receive < 10){
+  46   2              Temperature_Show_Arr[5] = 11;
+  47   2              Temperature_Show_Arr[6] = 0;
+  48   2              Temperature_Show_Arr[7] = dat_receive%10;
+  49   2          }
+  50   1      }
+  51          
+  52          // 光照数据解析
+  53          void Lighting_dat_Receive(){
+  54   1          unsigned char dat_receive = Photoresistor_Read();
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/24/2026 22:57:29 PAGE 2   
+
+  55   1          if(dat_receive >= 100){
+  56   2              Lighting_Show_Arr[5] = dat_receive/100;
+  57   2              Lighting_Show_Arr[6] = dat_receive%100/10;
+  58   2              Lighting_Show_Arr[7] = dat_receive%10;
+  59   2          }
+  60   1          else if(dat_receive >= 10 && dat_receive < 100){
+  61   2              Lighting_Show_Arr[5] = 11;
+  62   2              Lighting_Show_Arr[6] = dat_receive%100/10;
+  63   2              Lighting_Show_Arr[7] = dat_receive%10;
+  64   2          }
+  65   1          else if(dat_receive >= 0 && dat_receive < 10){
+  66   2              Lighting_Show_Arr[5] = 11;
+  67   2              Lighting_Show_Arr[6] = 11;
+  68   2              Lighting_Show_Arr[7] = dat_receive%10;
+  69   2          }
+  70   1      }
+  71          
+  72          // 温度DAC解析（
+  73          void Temperature_DAC_Receive(){
+  74   1          float temp_original = DS18B20_Read();
+  75   1          float dac_voltage = 1.0 + (temp_original / 40.0) * 4.0;
+  76   1          unsigned int dac_scaled = (unsigned int)(dac_voltage * 10);
+  77   1          
+  78   1          if(temp_original <= 10){
+  79   2              Temperature_DAC_Arr[6] = 1;  // 十位：1（对应1.0V）
+  80   2              Temperature_DAC_Arr[7] = 0;  // 个位：0（仅≤10℃时固定0）
+  81   2          }
+  82   1          else if(temp_original >= 40){
+  83   2              Temperature_DAC_Arr[6] = 5;  // 十位：5（对应5.0V）
+  84   2              Temperature_DAC_Arr[7] = 0;  // 个位：0（仅≥40℃时固定0）
+  85   2          }
+  86   1          else{
+  87   2              Temperature_DAC_Arr[6] = dac_scaled / 10;  // 十位（如25→2）
+  88   2              Temperature_DAC_Arr[7] = dac_scaled % 10;  // 个位（如25→5）
+  89   2          }
+  90   1      }
+  91          
+  92          // 光照DAC解析
+  93          void Lighting_DAC_Receive(){
+  94   1          unsigned char light_original = Photoresistor_Read();
+  95   1          float dac_voltage = 1.0 + (light_original / 255.0) * 4.0;
+  96   1          unsigned int dac_scaled = (unsigned int)(dac_voltage * 10);
+  97   1          
+  98   1          if(light_original <= 10){
+  99   2              Lighting_DAC_Arr[6] = 1;  // 十位：1（对应1.0V）
+ 100   2              Lighting_DAC_Arr[7] = 0;  // 个位：0（仅≤10时固定0）
+ 101   2          }
+ 102   1          else if(light_original >= 240){
+ 103   2              Lighting_DAC_Arr[6] = 5;  // 十位：5（对应5.0V）
+ 104   2              Lighting_DAC_Arr[7] = 0;  // 个位：0（仅≥240时固定0）
+ 105   2          }
+ 106   1          else{
+ 107   2              Lighting_DAC_Arr[6] = dac_scaled / 10;  // 十位（实时值）
+ 108   2              Lighting_DAC_Arr[7] = dac_scaled % 10;  // 个位（实时值）
+ 109   2          }
+ 110   1      }
+ 111          
+ 112          // 选择显示数组
+ 113          void LED_Display_Arr(){
+ 114   1          unsigned char key_state = Key_Work();
+ 115   1          unsigned char is_mode_interface = (key_state >> 4) & 0x01;  // 1=MODE界面，0=DAC界面
+ 116   1          unsigned char current_mode = key_state & 0x0F;             // 1=温度，2=光照
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/24/2026 22:57:29 PAGE 3   
+
+ 117   1              unsigned char i;
+ 118   1      
+ 119   1          // 根据界面+模式选择显示数组
+ 120   1          if(is_mode_interface == 1){  // MODE界面
+ 121   2              if(current_mode == 1){   // 模式一：温度
+ 122   3                  for(i=0; i<8; i++) dat_arr[i] = Temperature_Show_Arr[i];
+ 123   3                  LED(LED_Table[0]);   // 指示灯1亮（温度模式）
+ 124   3              }
+ 125   2                      else{                   // 模式二：光照
+ 126   3                  for(i=0; i<8; i++) dat_arr[i] = Lighting_Show_Arr[i];
+ 127   3                  LED(LED_Table[1]);   // 指示灯2亮（光照模式）
+ 128   3              }
+ 129   2          }
+ 130   1              else{                       // DAC界面
+ 131   2              if(current_mode == 1){   // 模式一→温度DAC
+ 132   3                  for(i=0; i<8; i++) dat_arr[i] = Temperature_DAC_Arr[i];
+ 133   3                              LED(LED_Table[0]); 
+ 134   3              }
+ 135   2                      else{                   // 模式二→光照DAC
+ 136   3                  for(i=0; i<8; i++) dat_arr[i] = Lighting_DAC_Arr[i];
+ 137   3                              LED(LED_Table[1]);
+ 138   3              }
+ 139   2          }
+ 140   1      }
+ 141          
+ 142          // 数码管显示驱动（
+ 143          void LED_Display_Show(){
+ 144   1          unsigned char com = 0;
+ 145   1              unsigned char dat;
+ 146   1              unsigned char i;
+ 147   1          LED_Display_Arr();  // 先更新显示数组
+ 148   1      
+ 149   1          for(i = 0;i < 8;i++){
+ 150   2              COM(0xFF);
+ 151   2              SEG(0xFF);
+ 152   2              COM(1<<com);
+ 153   2              dat = Seg_Table[dat_arr[i]];
+ 154   2              if(i == 6){  
+ 155   3                  if(cur_mode == 1){
+ 156   4                      dat &= 0x7F;
+ 157   4                  }
+ 158   3                  else if(cur_mode == 2 && S4_Password == 0){
+ 159   4                      dat &= 0x7F;
+ 160   4                  }
+ 161   3              }
+ 162   2              SEG(dat);
+ 163   2              Delay1ms();
+*** WARNING C206 IN LINE 163 OF LED_Display.c: 'Delay1ms': missing function-prototype
+ 164   2              com++;
+ 165   2          }
+ 166   1          COM(0xFF);
+ 167   1          SEG(0xFF);
+ 168   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    805    ----
+   CONSTANT SIZE    =     12    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     40      23
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       01/24/2026 22:57:29 PAGE 4   
+
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
