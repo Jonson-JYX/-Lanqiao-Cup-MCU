@@ -1,0 +1,59 @@
+C51 COMPILER V9.60.7.0   LED                                                               02/22/2026 17:29:31 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN .\Objects\LED.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LED.l
+                    -st) OBJECT(.\Objects\LED.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "KEY.h"
+   3          #include "Common.h"
+   4          #include "Delay.h"
+   5          #include "Timer.h"
+   6          
+   7          unsigned char LED_value = 0xFF;
+   8          bit LED2_flag = 1;
+   9          
+  10          void LED_login(){
+  11   1          if(S9_cnt % 2 == 0){
+  12   2              LED_value = 0xFE;
+  13   2          }
+  14   1          else{
+  15   2              LED_value = 0xFF;
+  16   2          }
+  17   1          if(count > num){
+  18   2              LED_flag = 1;
+  19   2              if(LED2_flag){
+  20   3                  LED_value &= 0xFD;
+  21   3              }
+  22   2              else{
+  23   3                  LED_value |= 0xFE;
+  24   3              }
+  25   2              if(LED_cnt >= 200){
+  26   3                  LED2_flag = !LED2_flag;
+  27   3                  LED_cnt = 0;
+  28   3              }
+  29   2          }
+  30   1          else{
+  31   2              LED_flag = 0;
+  32   2              LED_value |= 0xFE;
+  33   2          }
+  34   1          LED(LED_value);
+  35   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     73    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
