@@ -1,0 +1,53 @@
+C51 COMPILER V9.60.7.0   PCF8591                                                           02/23/2026 13:43:17 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PCF8591
+OBJECT MODULE PLACED IN .\Objects\PCF8591.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE PCF8591.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\P
+                    -CF8591.lst) OBJECT(.\Objects\PCF8591.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "IIC.h"
+   3          #include "Timer.h"
+   4          
+   5          unsigned int Light_value = 0;
+   6          
+   7          float Read_Light(){
+   8   1          unsigned char dat;
+   9   1          I2CStart();
+  10   1          I2CSendByte(0x90);
+  11   1          I2CWaitAck();
+  12   1          I2CSendByte(0x01);
+  13   1          I2CWaitAck();
+  14   1          I2CStop();
+  15   1          I2CStart();
+  16   1          I2CSendByte(0x91);
+  17   1          I2CWaitAck();
+  18   1          dat = I2CReceiveByte();
+  19   1          I2CWaitAck();
+  20   1          I2CStop();
+  21   1          return (float)dat / 255.0;
+  22   1      }
+  23          
+  24          void Light_login(){
+  25   1          float dat = Read_Light();
+  26   1          if(Light_cnt >= 100){
+  27   2              Light_value = (unsigned int)(dat * 50.0);
+  28   2          }
+  29   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    108    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

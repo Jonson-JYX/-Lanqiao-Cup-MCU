@@ -1,0 +1,155 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/23/2026 13:43:18 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Common.h"
+   3          #include "KEY.h"
+   4          #include "PCF8591.h"
+   5          #include "NE555.h"
+   6          #include "Delay.h"
+   7          
+   8          code unsigned char SEG_Table[] = {
+   9              0xC0,   //0
+  10              0xF9,   //1
+  11              0xA4,   //2
+  12              0xB0,   //3
+  13              0x99,   //4
+  14              0x92,   //5
+  15              0x82,   //6
+  16              0xF8,   //7
+  17              0x80,   //8
+  18              0x90,   //9
+  19              0x8E,   //F
+  20              0x86,   //E
+  21              0xFF    //全灭
+  22          };
+  23          
+  24          unsigned char NE555_dat_arr[] = {10,12,12,12,12,12,12,12};
+  25          unsigned char Light_dat_arr[] = {11,12,12,12,12,12,12,12};
+  26          unsigned char LED_Display_arr[] = {12,12,12,12,12,12,12,12};
+  27          
+  28          void NE555_Display(){
+  29   1          if(key_value > 10){
+  30   2              NE555_dat_arr[1] = key_value / 10;
+  31   2              NE555_dat_arr[2] = key_value % 10;
+  32   2          } 
+  33   1          else if(key_value > 0 && key_value < 10){
+  34   2              NE555_dat_arr[1] = 12;
+  35   2              NE555_dat_arr[2] = key_value;
+  36   2          }
+  37   1              else if(key_value == 0){
+  38   2                      NE555_dat_arr[1] = 12;
+  39   2              NE555_dat_arr[2] = 12;
+  40   2              }
+  41   1          if(NE555_value >= 10000){
+  42   2              NE555_dat_arr[3] = NE555_value / 10000;
+  43   2              NE555_dat_arr[4] = NE555_value % 10000 / 1000;
+  44   2              NE555_dat_arr[5] = NE555_value % 1000 / 100;
+  45   2              NE555_dat_arr[6] = NE555_value % 100 / 10;
+  46   2              NE555_dat_arr[7] = NE555_value % 10;
+  47   2          }
+  48   1          else if(NE555_value >= 1000 && NE555_value < 10000){
+  49   2              NE555_dat_arr[3] = 12;
+  50   2              NE555_dat_arr[4] = NE555_value / 1000;
+  51   2              NE555_dat_arr[5] = NE555_value % 1000 / 100;
+  52   2              NE555_dat_arr[6] = NE555_value % 100 / 10;
+  53   2              NE555_dat_arr[7] = NE555_value % 10;
+  54   2          }
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/23/2026 13:43:18 PAGE 2   
+
+  55   1          else if(NE555_value >= 100 && NE555_value < 1000){
+  56   2              NE555_dat_arr[3] = 12;
+  57   2              NE555_dat_arr[4] = 12;
+  58   2              NE555_dat_arr[5] = NE555_value / 100;
+  59   2              NE555_dat_arr[6] = NE555_value % 100 / 10;
+  60   2              NE555_dat_arr[7] = NE555_value % 10;
+  61   2          }
+  62   1          else if(NE555_value >= 10 && NE555_value < 100){
+  63   2              NE555_dat_arr[3] = 12;
+  64   2              NE555_dat_arr[4] = 12;
+  65   2              NE555_dat_arr[5] = 12;
+  66   2              NE555_dat_arr[6] = NE555_value / 10;
+  67   2              NE555_dat_arr[7] = NE555_value % 10;
+  68   2          }
+  69   1          else if(NE555_value >= 0 && NE555_value < 10){
+  70   2              NE555_dat_arr[3] = 12;
+  71   2              NE555_dat_arr[4] = 12;
+  72   2              NE555_dat_arr[5] = 12;
+  73   2              NE555_dat_arr[6] = 12;
+  74   2              NE555_dat_arr[7] = NE555_value;
+  75   2          }
+  76   1      }
+  77          
+  78          void Light_Display(){
+  79   1          if(key_value > 10){
+  80   2              Light_dat_arr[1] = key_value / 10;
+  81   2              Light_dat_arr[2] = key_value % 10;
+  82   2          }
+  83   1          else if(key_value > 0 && key_value < 10){
+  84   2              Light_dat_arr[1] = 12;
+  85   2              Light_dat_arr[2] = key_value;
+  86   2          }
+  87   1              else if(key_value == 0){
+  88   2                      Light_dat_arr[1] = 12;
+  89   2              Light_dat_arr[2] = 12;
+  90   2              }
+  91   1          Light_dat_arr[6] = Light_value / 10;
+  92   1          Light_dat_arr[7] = Light_value % 10;
+  93   1      }
+  94          
+  95          void LED_Display_Choose(){
+  96   1          unsigned char dat = S12_cnt % 2;
+  97   1          unsigned char i;
+  98   1          switch(dat){
+  99   2              case 0:
+ 100   2                  NE555_Display();
+ 101   2                  for(i = 0;i < 8;i++){
+ 102   3                      LED_Display_arr[i] = NE555_dat_arr[i];
+ 103   3                  }
+ 104   2                  break;
+ 105   2              case 1:
+ 106   2                  Light_Display();
+ 107   2                  for(i = 0;i < 8;i++){
+ 108   3                      LED_Display_arr[i] = Light_dat_arr[i];
+ 109   3                  }
+ 110   2                  break;
+ 111   2          }
+ 112   1      }
+ 113          
+ 114          void LED_Display_Show(){
+ 115   1          unsigned char com;
+ 116   1          unsigned char dat;
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       02/23/2026 13:43:18 PAGE 3   
+
+ 117   1          for(com = 0;com < 8;com++){
+ 118   2              SEG(0xFF);
+ 119   2              COM(1<<com);
+ 120   2              dat = SEG_Table[LED_Display_arr[com]];
+ 121   2              if(S12_cnt % 2 == 1 && com == 6){
+ 122   3                  dat &= 0x7F;
+ 123   3              }
+ 124   2              SEG(dat);
+ 125   2              Delay50us();
+ 126   2          }
+ 127   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    569    ----
+   CONSTANT SIZE    =     13    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     24       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

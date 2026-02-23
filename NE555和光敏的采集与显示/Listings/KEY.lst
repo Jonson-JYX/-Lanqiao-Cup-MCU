@@ -1,0 +1,81 @@
+C51 COMPILER V9.60.7.0   KEY                                                               02/23/2026 13:43:18 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\KEY.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE KEY.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\KEY.l
+                    -st) OBJECT(.\Objects\KEY.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Delay.h"
+   3          
+   4          unsigned char S12_cnt = 0;
+   5          unsigned char key_value = 0;
+   6          
+   7          unsigned char Key_Scan(){
+   8   1          unsigned char key = 0;
+   9   1          P32 = 0;P33 = 1;
+  10   1          if(P42 == 0){   //S9
+  11   2              Delay100ms();
+  12   2              while(P42 == 0){
+  13   3                  key = 1;
+  14   3              }
+  15   2          }
+  16   1          if(P35 == 0){   //S13
+  17   2              Delay100ms();
+  18   2              while(P35 == 0){
+  19   3                  key = 2;
+  20   3              }
+  21   2          }
+  22   1          P32 = 1;P33 = 0;
+  23   1          if(P42 == 0){   //S8
+  24   2              Delay100ms();
+  25   2              while(P42 == 0){
+  26   3                  key = 3;
+  27   3              }
+  28   2          }
+  29   1          if(P35 == 0){   //S12
+  30   2              Delay100ms();
+  31   2              while(P35 == 0){
+  32   3                  key = 4;
+  33   3              }
+  34   2          }
+  35   1          return key;
+  36   1      }
+  37          
+  38          void Key_login(){
+  39   1          unsigned char key = Key_Scan();
+  40   1          switch(key){
+  41   2              case 1:
+  42   2                  key_value = 9;
+  43   2                  break;
+  44   2              case 2:
+  45   2                  key_value = 13;
+  46   2                  break;
+  47   2              case 3:
+  48   2                  key_value = 8;
+  49   2                  break;
+  50   2              case 4:
+  51   2                  S12_cnt = (S12_cnt + 1) % 2;
+  52   2                  key_value = 12;
+  53   2                  break;
+  54   2          }
+C51 COMPILER V9.60.7.0   KEY                                                               02/23/2026 13:43:18 PAGE 2   
+
+  55   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    111    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
