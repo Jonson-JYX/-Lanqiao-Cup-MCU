@@ -1,0 +1,157 @@
+C51 COMPILER V9.60.7.0   DS1302                                                            03/04/2026 22:47:31 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DS1302
+OBJECT MODULE PLACED IN .\Objects\DS1302.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE DS1302.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\DS
+                    -1302.lst) OBJECT(.\Objects\DS1302.obj)
+
+line level    source
+
+   1          #include "stc15f2k60s2.h"
+   2          #include "intrins.h"
+   3          #include "Timer.h"
+   4          
+   5          sbit SCK = P1^7;                
+   6          sbit SDA = P2^3;                
+   7          sbit RST = P1^3;
+   8          
+   9          code unsigned char w_rtc_address[7]={0x80,0x82,0x84,0x86,0x88,0x8a,0x8c}; 
+  10          code unsigned char r_rtc_address[7]={0x81,0x83,0x85,0x87,0x89,0x8b,0x8d}; 
+  11          
+  12          unsigned char set[6] = {2,3,5,9,5,9};
+  13          unsigned char rtc[6];
+  14          unsigned char *Time_value;
+  15          unsigned char Time_dat[4];
+  16          unsigned int Time_num = 0;
+  17          /*
+  18          */
+  19          void Write_Ds1302_Byte(unsigned  char temp) 
+  20          {
+  21   1              unsigned char i;
+  22   1              for (i=0;i<8;i++)       
+  23   1              { 
+  24   2                      SCK=0;
+  25   2                      SDA=temp&0x01;
+  26   2                      temp>>=1; 
+  27   2                      SCK=1;
+  28   2              }
+  29   1      }   
+  30          
+  31          void Write_Ds1302( unsigned char address,unsigned char dat )     
+  32          {
+  33   1              RST=0;
+  34   1              _nop_();
+  35   1              SCK=0;
+  36   1              _nop_();
+  37   1              RST=1;  
+  38   1              _nop_();  
+  39   1              Write_Ds1302_Byte(address);     
+  40   1              Write_Ds1302_Byte(dat);         
+  41   1              RST=0; 
+  42   1      }
+  43          
+  44          unsigned char Read_Ds1302 ( unsigned char address )
+  45          {
+  46   1              unsigned char i,temp=0x00;
+  47   1              RST=0;
+  48   1              _nop_();
+  49   1              SCK=0;
+  50   1              _nop_();
+  51   1              RST=1;
+  52   1              _nop_();
+  53   1              Write_Ds1302_Byte(address);
+  54   1              for (i=0;i<8;i++)       
+C51 COMPILER V9.60.7.0   DS1302                                                            03/04/2026 22:47:31 PAGE 2   
+
+  55   1              {               
+  56   2                      SCK=0;
+  57   2                      temp>>=1;       
+  58   2                      if(SDA)
+  59   2                      temp|=0x80;     
+  60   2                      SCK=1;
+  61   2              } 
+  62   1              RST=0;
+  63   1              _nop_();
+  64   1              RST=0;
+  65   1              SCK=0;
+  66   1              _nop_();
+  67   1              SCK=1;
+  68   1              _nop_();
+  69   1              SDA=0;
+  70   1              _nop_();
+  71   1              SDA=1;
+  72   1              _nop_();
+  73   1              return (temp);                  
+  74   1      }
+  75          
+  76          /*
+  77          */
+  78          unsigned char* ReadRTC(void)
+  79          {
+  80   1              unsigned char i, *p;
+  81   1              unsigned char tmp[3];
+  82   1              
+  83   1              p = (unsigned char *)r_rtc_address;     
+  84   1              
+  85   1              for(i=0;i<3;i++){
+  86   2                      tmp[i]=Read_Ds1302(*p);
+  87   2                      p++;
+  88   2              }
+  89   1              
+  90   1              rtc[0] = (tmp[2] >> 4);
+  91   1              rtc[1] = (tmp[2] & 0x0F);
+  92   1              rtc[2] = (tmp[1] >> 4);
+  93   1              rtc[3] = (tmp[1] & 0x0F);
+  94   1              rtc[4] = (tmp[0] >> 4);
+  95   1              rtc[5] = (tmp[0] & 0x0F);
+  96   1              
+  97   1              return rtc;
+  98   1      }
+  99          
+ 100          /*
+ 101          */
+ 102          void SetRTC(void)
+ 103          {
+ 104   1              Write_Ds1302(0x8E,0X00);
+ 105   1              
+ 106   1              Write_Ds1302(w_rtc_address[0], (set[4]<<4) | (set[5]));
+ 107   1              Write_Ds1302(w_rtc_address[1], (set[2]<<4) | (set[3]));
+ 108   1              Write_Ds1302(w_rtc_address[2], (set[0]<<4) | (set[1]));
+ 109   1              
+ 110   1              Write_Ds1302(0x8E,0x80);
+ 111   1      }
+ 112          
+ 113          void Time_login(){
+ 114   1              unsigned char i;
+ 115   1              Time_value = ReadRTC();
+ 116   1          if(Time_flag && Collect_Flag == 0){
+C51 COMPILER V9.60.7.0   DS1302                                                            03/04/2026 22:47:31 PAGE 3   
+
+ 117   2              for(i = 0;i < 4;i++){
+ 118   3                  Time_dat[i] = Time_value[i];
+ 119   3              }
+ 120   2              Time_cnt = 0;
+ 121   2              Time_flag = 0;
+ 122   2          }
+ 123   1          if(light_flag){
+ 124   2              Time_flag = 1;
+ 125   2          }
+ 126   1          else{
+ 127   2              Time_flag = 0;
+ 128   2          }
+ 129   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    290    ----
+   CONSTANT SIZE    =     14    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     21       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

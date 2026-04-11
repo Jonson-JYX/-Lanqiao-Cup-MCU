@@ -1,0 +1,51 @@
+C51 COMPILER V9.60.7.0   TIMER                                                             04/05/2026 15:59:14 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN .\Objects\Timer.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Timer.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Tim
+                    -er.lst) OBJECT(.\Objects\Timer.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          
+   3          unsigned int Sound_cnt = 0;   //声音测量计数器
+   4          unsigned int Temp_cnt = 0;    //温度测量计数器
+   5          unsigned int RB2_cnt = 0;     //RB2测量计数器
+   6          unsigned int Time_cnt = 0;    //时间计数器
+   7          unsigned int NE555_cnt = 0;   //NE555测量计数器
+   8          
+   9          void Timer1_Isr(void) interrupt 3{
+  10   1              Sound_cnt++;   //声音测量计数器加1
+  11   1          Temp_cnt++;    //温度测量计数器加1
+  12   1          RB2_cnt++;     //RB2测量计数器加1
+  13   1          Time_cnt++;    //时间计数器加1
+  14   1          NE555_cnt++;   //NE555测量计数器加1
+  15   1      }
+  16          
+  17          void Timer1_Init(void)          //1毫秒@12.000MHz
+  18          {
+  19   1              AUXR &= 0xBF;                   //定时器时钟12T模式
+  20   1              TMOD &= 0x0F;                   //设置定时器模式
+  21   1              TL1 = 0x18;                             //设置定时初始值
+  22   1              TH1 = 0xFC;                             //设置定时初始值
+  23   1              TF1 = 0;                                //清除TF1标志
+  24   1              TR1 = 1;                                //定时器1开始计时
+  25   1              ET1 = 1;                                //使能定时器1中断
+  26   1          EA = 1;                                     //使能全局中断
+  27   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     66    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     10    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

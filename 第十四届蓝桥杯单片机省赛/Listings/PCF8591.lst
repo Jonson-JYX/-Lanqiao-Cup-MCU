@@ -1,0 +1,77 @@
+C51 COMPILER V9.60.7.0   PCF8591                                                           03/04/2026 22:47:30 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PCF8591
+OBJECT MODULE PLACED IN .\Objects\PCF8591.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE PCF8591.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\P
+                    -CF8591.lst) OBJECT(.\Objects\PCF8591.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "IIC.h"
+   3          #include "Timer.h"
+   4          #include "NE555.h"
+   5          #include "DS18B20.h"
+   6          #include "DS1302.h"
+   7          
+   8          unsigned char Light_value = 0;
+   9          unsigned char xdata Light_Standard = 0;
+  10          
+  11          unsigned char Read_Light(){
+  12   1          unsigned char light = 0;
+  13   1          I2CStart();
+  14   1          I2CSendByte(0x90);
+  15   1          I2CWaitAck();
+  16   1          I2CSendByte(0x03);
+  17   1          I2CWaitAck();
+  18   1          I2CStop();
+  19   1          I2CStart();
+  20   1          I2CSendByte(0x91);
+  21   1          I2CWaitAck();
+  22   1          light = I2CReceiveByte();
+  23   1          I2CWaitAck();
+  24   1          I2CStop();
+  25   1          return light;
+  26   1      }
+  27          
+  28          void Light_login(){
+  29   1          if(Light_cnt >= 100){
+  30   2              Light_value = Read_Light();
+  31   2              Light_cnt = 0;
+  32   2          }
+  33   1          if(Light_Standard > Light_value){
+  34   2              light_flag = 1;
+  35   2              NE555_flag = 1;
+  36   2              Temp_flag = 1;
+  37   2      
+  38   2              if(Collect_Flag == 0){
+  39   3                  Temp_value = (unsigned int)(Read_Temp() * 10.0);  
+*** WARNING C206 IN LINE 39 OF PCF8591.c: 'Read_Temp': missing function-prototype
+  40   3                  NE555_value = (TH0 << 8) | TL0;                  
+  41   3                  Time_value = ReadRTC();                          
+  42   3                  Collect_Flag = 1;  
+  43   3                  TH0 = 0; 
+  44   3                  TL0 = 0;
+  45   3              }
+  46   2          }
+  47   1          else{
+  48   2              light_flag = 0;
+  49   2          }
+  50   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.60.7.0   PCF8591                                                           03/04/2026 22:47:30 PAGE 2   
+
+   CODE SIZE        =    147    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      1    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

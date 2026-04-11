@@ -1,0 +1,144 @@
+C51 COMPILER V9.60.0.0   KEY                                                               04/10/2026 22:15:36 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\KEY.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE KEY.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\KEY.l
+                    -st) TABS(2) OBJECT(.\Objects\KEY.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "Timer.h"
+   3          
+   4          unsigned char Key_value = 0;
+   5          unsigned char Key_Down = 0;
+   6          unsigned char Key_Long = 0;
+   7          
+   8          unsigned char status = 0;
+   9          unsigned int press_cnt = 0;
+  10          unsigned char current_key = 0;
+  11          
+  12          // 矩阵键盘扫描，返回按键码(1-16)或0
+  13          unsigned char KEY_Read(void)
+  14          {
+  15   1        // 扫描第一行 (P44)
+  16   1        P44 = 0; P42 = 1; P35 = 1; P34 = 1;
+  17   1        if(P33 == 0) return 1;
+  18   1        if(P32 == 0) return 2;
+  19   1        if(P31 == 0) return 3;
+  20   1        if(P30 == 0) return 4;
+  21   1        
+  22   1        // 扫描第二行 (P42)
+  23   1        P44 = 1; P42 = 0; P35 = 1; P34 = 1;
+  24   1        if(P33 == 0) return 5;
+  25   1        if(P32 == 0) return 6;
+  26   1        if(P31 == 0) return 7;
+  27   1        if(P30 == 0) return 8;
+  28   1        
+  29   1        // 扫描第三行 (P35)
+  30   1        P44 = 1; P42 = 1; P35 = 0; P34 = 1;
+  31   1        if(P33 == 0) return 9;
+  32   1        if(P32 == 0) return 10;
+  33   1        if(P31 == 0) return 11;
+  34   1        if(P30 == 0) return 12;
+  35   1        
+  36   1        // 扫描第四行 (P34)
+  37   1        P44 = 1; P42 = 1; P35 = 1; P34 = 0;
+  38   1        if(P33 == 0) return 13;
+  39   1        if(P32 == 0) return 14;
+  40   1        if(P31 == 0) return 15;
+  41   1        if(P30 == 0) return 16;
+  42   1        
+  43   1        return 0;
+  44   1      }
+  45          
+  46          void KEY_Scan(void)
+  47          {
+  48   1        unsigned char key_num;
+  49   1        
+  50   1        key_num = KEY_Read();
+  51   1        
+  52   1        switch(status)
+  53   1        {
+  54   2          case 0:  // 空闲状态
+C51 COMPILER V9.60.0.0   KEY                                                               04/10/2026 22:15:36 PAGE 2   
+
+  55   2            if(key_num != 0)
+  56   2            {
+  57   3              current_key = key_num;
+  58   3              press_cnt = 0;
+  59   3              status = 1;
+  60   3            }
+  61   2            break;
+  62   2            
+  63   2          case 1:  // 消抖状态
+  64   2            if(key_num == current_key)
+  65   2            {
+  66   3              press_cnt++;
+  67   3              if(press_cnt >= 2)  // 20ms消抖
+  68   3              {
+  69   4                status = 2;
+  70   4              }
+  71   3            }
+  72   2            else
+  73   2            {
+  74   3              status = 0;
+  75   3            }
+  76   2            break;
+  77   2            
+  78   2          case 2:  // 等待释放或长按
+  79   2            if(key_num == current_key)
+  80   2            {
+  81   3              press_cnt++;
+  82   3              if(press_cnt >= 100)  // 1000ms长按
+  83   3              {
+  84   4                // 长按返回 16 + current_key (17-32)
+  85   4                Key_Long = 1;
+  86   4                Key_value = 16 + current_key;
+  87   4                status = 3;
+  88   4              }
+  89   3            }
+  90   2            else  // 短按释放
+  91   2            {
+  92   3              // 短按返回 current_key (1-16)
+  93   3              Key_Down = 1;
+  94   3              Key_value = current_key;
+  95   3              status = 0;
+  96   3            }
+  97   2            break;
+  98   2            
+  99   2          case 3:  // 长按等待释放
+ 100   2            if(key_num != current_key)
+ 101   2            {
+ 102   3              status = 0;
+ 103   3            }
+ 104   2            break;
+ 105   2        }
+ 106   1      }
+ 107          
+ 108          void KEY_Init(void)
+ 109          {
+ 110   1        status = 0;
+ 111   1        press_cnt = 0;
+ 112   1        current_key = 0;
+ 113   1        Key_value = 0;
+ 114   1        Key_Down = 0;
+ 115   1        Key_Long = 0;
+ 116   1      }
+C51 COMPILER V9.60.0.0   KEY                                                               04/10/2026 22:15:36 PAGE 3   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    257    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      7    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

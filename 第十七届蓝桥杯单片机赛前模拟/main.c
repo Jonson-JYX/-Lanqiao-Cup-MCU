@@ -1,0 +1,38 @@
+#include <STC15F2K60S2.H>
+#include "Common.h"
+#include "Timer.h"
+#include "DS18B20.h"
+#include "PCF8591.h"
+#include "KEY.h"
+#include "LED.h"
+#include "LED_Display.h"
+
+void Init_MCU(){
+    LED(0xFF);
+    SEG(0xFF);
+    COM(0xFF);
+    BUZ(0x00);
+    REY(0x00);
+    Timer0_Init();
+}
+
+void main(){
+    Init_MCU();
+    while(1){
+        Key_Scan();
+        Key_login();
+        Temp_login();
+        if(S4_cnt == 1 && S5_cnt == 0){
+            RB2_login();
+        }
+        if(S4_cnt == 1 && S5_cnt == 1){
+            Light_login();
+        }
+        if(S4_cnt == 2){
+            DAC_login();
+        }
+        LED_login();
+        LED_Display_Choose();
+        LED_Display_Show();
+    }
+}

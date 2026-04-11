@@ -1,0 +1,82 @@
+version: "4.1"
+name: project
+type: C51
+deviceName: null
+packDir: null
+srcDirs: []
+virtualFolder:
+  name: <virtual_root>
+  files: []
+  folders:
+    - name: Source Group 1
+      files:
+        - path: main.c
+        - path: Sound.c
+        - path: DS18B20.c
+        - path: NE555.c
+        - path: Uart.c
+        - path: DS1302.c
+        - path: KEY.c
+        - path: Relay.c
+        - path: LED.c
+        - path: PCF8591.c
+        - path: LED_Display.c
+        - path: Onewire.c
+        - path: IIC.c
+        - path: Timer.c
+        - path: Delay.c
+        - path: Sound.h
+        - path: DS1302.h
+        - path: NE555.h
+        - path: Uart.h
+        - path: DS18B20.h
+        - path: KEY.h
+        - path: Relay.h
+        - path: LED.h
+        - path: PCF8591.h
+        - path: LED_Display.h
+        - path: Onewire.h
+        - path: IIC.h
+        - path: Timer.h
+        - path: Delay.h
+        - path: Common.h
+        - path: Tank.c
+        - path: Tank.h
+      folders: []
+dependenceList: []
+outDir: build
+miscInfo:
+  uid: 37c9632a67c87add9de213f5ff76b543
+targets:
+  Target 1:
+    cppPreprocessAttrs:
+      defineList: []
+      incList:
+        - C:/Keil_v5/C51/INC/STC
+      libList: []
+    excludeList: []
+    settings: {}
+    toolchain: Keil_C51
+    toolchainConfigMap:
+      Keil_C51:
+        options:
+          version: 2
+          afterBuildTasks: []
+          asm-compiler: {}
+          beforeBuildTasks: []
+          c/cpp-compiler:
+            optimization-level: level-8
+            optimization-type: SPEED
+          global:
+            ram-mode: SMALL
+            rom-mode: LARGE
+          linker:
+            misc-controls: ""
+            output-format: elf
+            remove-unused: true
+    uploadConfigMap:
+      Custom:
+        bin: ""
+        commandLine: ""
+        eraseChipCommand: ""
+    uploader: Custom

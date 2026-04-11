@@ -1,0 +1,149 @@
+C51 COMPILER V9.60.7.0   DS1302                                                            04/05/2026 15:59:14 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DS1302
+OBJECT MODULE PLACED IN .\Objects\DS1302.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE DS1302.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\DS
+                    -1302.lst) OBJECT(.\Objects\DS1302.obj)
+
+line level    source
+
+   1          #include "stc15f2k60s2.h"
+   2          #include "intrins.h"
+   3          #include "Timer.h"
+*** ERROR C141 IN LINE 3 OF Timer.h: syntax error near ';', expected 'hdata'
+   4          
+   5          code unsigned char w_rtc_address[7]={0x80,0x82,0x84,0x86,0x88,0x8a,0x8c}; 
+   6          code unsigned char r_rtc_address[7]={0x81,0x83,0x85,0x87,0x89,0x8b,0x8d}; 
+   7          
+   8          unsigned char set[6] = {2,3,5,9,5,9};
+   9          unsigned char rtc[6];
+  10          unsigned char *Time_value;
+  11          
+  12          /*
+  13          */
+  14          void Write_Ds1302_Byte(unsigned  char temp) 
+  15          {
+  16   1              unsigned char i;
+  17   1              for (i=0;i<8;i++)       
+  18   1              { 
+  19   2                      SCK=0;
+*** ERROR C202 IN LINE 19 OF DS1302.c: 'SCK': undefined identifier
+  20   2                      SDA=temp&0x01;
+*** ERROR C202 IN LINE 20 OF DS1302.c: 'SDA': undefined identifier
+  21   2                      temp>>=1; 
+  22   2                      SCK=1;
+*** ERROR C202 IN LINE 22 OF DS1302.c: 'SCK': undefined identifier
+  23   2              }
+  24   1      }   
+  25          
+  26          void Write_Ds1302( unsigned char address,unsigned char dat )     
+  27          {
+  28   1              RST=0;
+*** ERROR C202 IN LINE 28 OF DS1302.c: 'RST': undefined identifier
+  29   1              _nop_();
+  30   1              SCK=0;
+*** ERROR C202 IN LINE 30 OF DS1302.c: 'SCK': undefined identifier
+  31   1              _nop_();
+  32   1              RST=1;  
+*** ERROR C202 IN LINE 32 OF DS1302.c: 'RST': undefined identifier
+  33   1              _nop_();  
+  34   1              Write_Ds1302_Byte(address);     
+  35   1              Write_Ds1302_Byte(dat);         
+  36   1              RST=0; 
+*** ERROR C202 IN LINE 36 OF DS1302.c: 'RST': undefined identifier
+  37   1      }
+  38          
+  39          unsigned char Read_Ds1302 ( unsigned char address )
+  40          {
+  41   1              unsigned char i,temp=0x00;
+  42   1              RST=0;
+*** ERROR C202 IN LINE 42 OF DS1302.c: 'RST': undefined identifier
+  43   1              _nop_();
+  44   1              SCK=0;
+*** ERROR C202 IN LINE 44 OF DS1302.c: 'SCK': undefined identifier
+C51 COMPILER V9.60.7.0   DS1302                                                            04/05/2026 15:59:14 PAGE 2   
+
+  45   1              _nop_();
+  46   1              RST=1;
+*** ERROR C202 IN LINE 46 OF DS1302.c: 'RST': undefined identifier
+  47   1              _nop_();
+  48   1              Write_Ds1302_Byte(address);
+  49   1              for (i=0;i<8;i++)       
+  50   1              {               
+  51   2                      SCK=0;
+*** ERROR C202 IN LINE 51 OF DS1302.c: 'SCK': undefined identifier
+  52   2                      temp>>=1;       
+  53   2                      if(SDA)
+*** ERROR C202 IN LINE 53 OF DS1302.c: 'SDA': undefined identifier
+  54   2                      temp|=0x80;     
+  55   2                      SCK=1;
+*** ERROR C202 IN LINE 55 OF DS1302.c: 'SCK': undefined identifier
+  56   2              } 
+  57   1              RST=0;
+*** ERROR C202 IN LINE 57 OF DS1302.c: 'RST': undefined identifier
+  58   1              _nop_();
+  59   1              RST=0;
+*** ERROR C202 IN LINE 59 OF DS1302.c: 'RST': undefined identifier
+  60   1              SCK=0;
+*** ERROR C202 IN LINE 60 OF DS1302.c: 'SCK': undefined identifier
+  61   1              _nop_();
+  62   1              SCK=1;
+*** ERROR C202 IN LINE 62 OF DS1302.c: 'SCK': undefined identifier
+  63   1              _nop_();
+  64   1              SDA=0;
+*** ERROR C202 IN LINE 64 OF DS1302.c: 'SDA': undefined identifier
+  65   1              _nop_();
+  66   1              SDA=1;
+*** ERROR C202 IN LINE 66 OF DS1302.c: 'SDA': undefined identifier
+  67   1              _nop_();
+  68   1              return (temp);                  
+  69   1      }
+  70          
+  71          /*
+  72          */
+  73          unsigned char* ReadRTC(void)
+  74          {
+  75   1              unsigned char i, *p;
+  76   1              unsigned char tmp[3];
+  77   1              
+  78   1              p = (unsigned char *)r_rtc_address;     
+  79   1              
+  80   1              for(i=0;i<3;i++){
+  81   2                      tmp[i]=Read_Ds1302(*p);
+  82   2                      p++;
+  83   2              }
+  84   1              
+  85   1              rtc[0] = (tmp[2] >> 4);
+  86   1              rtc[1] = (tmp[2] & 0x0F);
+  87   1              rtc[2] = (tmp[1] >> 4);
+  88   1              rtc[3] = (tmp[1] & 0x0F);
+  89   1              rtc[4] = (tmp[0] >> 4);
+  90   1              rtc[5] = (tmp[0] & 0x0F);
+  91   1              
+  92   1              return rtc;
+  93   1      }
+  94          
+  95          /*
+  96          */
+C51 COMPILER V9.60.7.0   DS1302                                                            04/05/2026 15:59:14 PAGE 3   
+
+  97          void SetRTC(void)
+  98          {
+  99   1              Write_Ds1302(0x8E,0X00);
+ 100   1              
+ 101   1              Write_Ds1302(w_rtc_address[0], (set[4]<<4) | (set[5]));
+ 102   1              Write_Ds1302(w_rtc_address[1], (set[2]<<4) | (set[3]));
+ 103   1              Write_Ds1302(w_rtc_address[2], (set[0]<<4) | (set[1]));
+ 104   1              
+ 105   1              Write_Ds1302(0x8E,0x80);
+ 106   1      }
+ 107          
+ 108          void Time_login(){
+ 109   1              if(Time_cnt >= 500){
+ 110   2                      Time_value = ReadRTC();
+ 111   2                      Time_cnt = 0;
+ 112   2              }
+ 113   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  20 ERROR(S)

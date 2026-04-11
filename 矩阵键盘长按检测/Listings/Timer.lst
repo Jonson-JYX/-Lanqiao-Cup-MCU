@@ -1,0 +1,138 @@
+C51 COMPILER V9.60.0.0   TIMER                                                             04/10/2026 22:15:36 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN .\Objects\Timer.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Timer.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Tim
+                    -er.lst) TABS(2) OBJECT(.\Objects\Timer.obj)
+
+line level    source
+
+   1          #include <stc15f2k60s2.h>
+   2          #include "KEY.h"
+   3          
+   4          unsigned int key1_cnt = 0;
+   5          bit key1_flag = 0;
+   6          unsigned int key2_cnt = 0;
+   7          bit key2_flag = 0;
+   8          unsigned int key3_cnt = 0;
+   9          bit key3_flag = 0;
+  10          unsigned int key4_cnt = 0;
+  11          bit key4_flag = 0;
+  12          unsigned int key5_cnt = 0;
+  13          bit key5_flag = 0;
+  14          unsigned int key6_cnt = 0;
+  15          bit key6_flag = 0;
+  16          unsigned int key7_cnt = 0;
+  17          bit key7_flag = 0;
+  18          unsigned int key8_cnt = 0;
+  19          bit key8_flag = 0;
+  20          unsigned int key9_cnt = 0;
+  21          bit key9_flag = 0;
+  22          unsigned int key10_cnt = 0;
+  23          bit key10_flag = 0;
+  24          unsigned int key11_cnt = 0;
+  25          bit key11_flag = 0;
+  26          unsigned int key12_cnt = 0;
+  27          bit key12_flag = 0;
+  28          unsigned int key13_cnt = 0;
+  29          bit key13_flag = 0;
+  30          unsigned int key14_cnt = 0;
+  31          bit key14_flag = 0;
+  32          unsigned int key15_cnt = 0;
+  33          bit key15_flag = 0;
+  34          unsigned int key16_cnt = 0;
+  35          bit key16_flag = 0;
+  36          
+  37          unsigned int timer_cnt = 0;  // 10ms计数器
+  38          
+  39          void Timer0_Isr(void) interrupt 1
+  40          {
+  41   1        // 原有的按键计数代码
+  42   1        if(key1_flag){
+  43   2          key1_cnt++;
+  44   2        }
+  45   1        if(key2_flag){
+  46   2          key2_cnt++;
+  47   2        }
+  48   1        if(key3_flag){
+  49   2          key3_cnt++;
+  50   2        }
+  51   1        if(key4_flag){
+  52   2          key4_cnt++;
+  53   2        }
+  54   1        if(key5_flag){
+C51 COMPILER V9.60.0.0   TIMER                                                             04/10/2026 22:15:36 PAGE 2   
+
+  55   2          key5_cnt++;
+  56   2        }
+  57   1        if(key6_flag){
+  58   2          key6_cnt++;
+  59   2        }
+  60   1        if(key7_flag){
+  61   2          key7_cnt++;
+  62   2        }
+  63   1        if(key8_flag){
+  64   2          key8_cnt++;
+  65   2        }
+  66   1        if(key9_flag){
+  67   2          key9_cnt++;
+  68   2        }
+  69   1        if(key10_flag){
+  70   2          key10_cnt++;
+  71   2        }
+  72   1        if(key11_flag){
+  73   2          key11_cnt++;
+  74   2        }
+  75   1        if(key12_flag){
+  76   2          key12_cnt++;
+  77   2        }
+  78   1        if(key13_flag){
+  79   2          key13_cnt++;
+  80   2        }
+  81   1        if(key14_flag){
+  82   2          key14_cnt++;
+  83   2        }
+  84   1        if(key15_flag){
+  85   2          key15_cnt++;
+  86   2        }
+  87   1        if(key16_flag){
+  88   2          key16_cnt++;
+  89   2        }
+  90   1        
+  91   1        // 每10ms调用一次按键扫描
+  92   1        timer_cnt++;
+  93   1        if(timer_cnt >= 10)
+  94   1        {
+  95   2          timer_cnt = 0;
+  96   2          KEY_Scan();
+  97   2        }
+  98   1      }
+  99          
+ 100          void Timer0_Init(void)    //1毫秒@12.000MHz
+ 101          {
+ 102   1        AUXR |= 0x80;     //定时器时钟1T模式
+ 103   1        TMOD &= 0xF0;     //设置定时器模式
+ 104   1        TL0 = 0x20;       //设置定时初始值
+ 105   1        TH0 = 0xD1;       //设置定时初始值
+ 106   1        TF0 = 0;        //清除TF0标志
+ 107   1        TR0 = 1;        //定时器0开始计时
+ 108   1        ET0 = 1;        //使能定时器0中断
+ 109   1        EA = 1;
+ 110   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    279    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.0.0   TIMER                                                             04/10/2026 22:15:36 PAGE 3   
+
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     34    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =     16    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,71 @@
+C51 COMPILER V9.60.7.0   NE555                                                             03/04/2026 22:47:30 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE NE555
+OBJECT MODULE PLACED IN .\Objects\NE555.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE NE555.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\NE5
+                    -55.lst) OBJECT(.\Objects\NE555.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Timer.h"
+   3          
+   4          unsigned int NE555_value = 0;
+   5          unsigned int NE555_max = 0;
+   6          unsigned int xdata NE555_Average = 0;
+   7          unsigned int xdata NE555_num = 0;
+   8          unsigned int xdata NE555_sum = 0;
+   9          
+  10          void Timer0_Init(void)          //1毫秒@12.000MHz
+  11          {
+  12   1              AUXR &= 0x7F;                   //定时器时钟12T模式
+  13   1              TMOD &= 0xF0;                   //设置定时器模式
+  14   1              TMOD |= 0x05;                   //设置定时器模式
+  15   1              TL0 = 0x00;                             //设置定时初始值
+  16   1              TH0 = 0x00;                             //设置定时初始值
+  17   1              TF0 = 0;                                //清除TF0标志
+  18   1              TR0 = 1;                                //定时器0开始计时
+  19   1      }
+  20          
+  21          void NE555_login(){
+  22   1          unsigned int value = 0;
+  23   1          if(NE555_flag && Collect_Flag == 0){
+  24   2              value = (TH0 << 8) | TL0;
+  25   2              TH0 = 0;
+  26   2              TL0 = 0;
+  27   2              if(value <= 200){
+  28   3                  NE555_value = 100;
+  29   3              }
+  30   2              else if(value >= 2000){
+  31   3                  NE555_value = 900;
+  32   3              }
+  33   2              else{
+  34   3                  NE555_value = (4.0 / 9.0) * value + (100.0 / 9.0);
+  35   3              }
+  36   2              if(NE555_max < NE555_value){
+  37   3                  NE555_max = NE555_value;
+  38   3              }
+  39   2              NE555_sum += NE555_value;
+  40   2              NE555_num++;
+  41   2              NE555_Average = NE555_sum / NE555_num / 10;
+  42   2              NE555_cnt = 0;
+  43   2              NE555_flag = 0;
+  44   2          }
+  45   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    200    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      6    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4    ----
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   NE555                                                             03/04/2026 22:47:30 PAGE 2   
+
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

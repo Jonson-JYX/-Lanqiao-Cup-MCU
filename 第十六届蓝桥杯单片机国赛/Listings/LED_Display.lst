@@ -1,0 +1,24 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       04/05/2026 15:59:14 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

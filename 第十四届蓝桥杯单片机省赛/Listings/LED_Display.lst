@@ -1,0 +1,239 @@
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       03/04/2026 22:47:31 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LED_DISPLAY
+OBJECT MODULE PLACED IN .\Objects\LED_Display.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LED_Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\LED_Display.lst) OBJECT(.\Objects\LED_Display.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Common.h"
+   3          #include "Timer.h"
+   4          #include "DS18B20.h"
+   5          #include "DS1302.h"
+   6          #include "KEY.h"
+   7          #include "NE555.h"
+   8          #include "Delay.h"
+   9          
+  10          code unsigned char SEG_Table[] = {
+  11              0xC0,   //0
+  12              0xF9,   //1
+  13              0xA4,   //2
+  14              0xB0,   //3
+  15              0x99,   //4
+  16              0x92,   //5
+  17              0x82,   //6
+  18              0xF8,   //7
+  19              0x80,   //8
+  20              0x90,   //9
+  21              0xBF,   //- 10
+  22              0xC6,   //C 11
+  23              0x89,   //H 12
+  24              0x8E,   //F 13
+  25              0x8C,   //P 14
+  26              0x87,   //E 15
+  27              0x88,   //A 16
+  28              0xFF    //全灭 17
+  29          };
+  30          
+  31          unsigned char Time_dat_arr[] = {17,17,10,17,17,10,17,17};       //时间界面
+  32          unsigned char Temp_Echo_arr[] = {11,17,17,17,10,17,17,17};      //温度回显
+  33          unsigned char Humidity_Echo_arr[] = {12,17,17,17,10,17,17,17};  //湿度回显
+  34          unsigned char Time_Echo_arr[] = {13,17,17,17,17,10,17,17};      //时间回显
+  35          unsigned char Parameter_dat_arr[] = {14,17,17,17,17,17,17,17};  //参数界面
+  36          unsigned char Temp_Humidity_arr[] = {15,17,17,17,17,10,17,17};  //温湿度界面
+  37          unsigned char LED_Display_arr[] = {17,17,17,17,17,17,17,17};
+  38          
+  39          void Time_Display(){
+  40   1          Time_dat_arr[0] = Time_value[0];
+  41   1          Time_dat_arr[1] = Time_value[1];
+  42   1          Time_dat_arr[3] = Time_value[2];
+  43   1          Time_dat_arr[4] = Time_value[3];
+  44   1          Time_dat_arr[6] = Time_value[4];
+  45   1          Time_dat_arr[7] = Time_value[5];
+  46   1      }
+  47          
+  48          void Temp_Echo_Display(){
+  49   1          if(Temp_max >= 10){
+  50   2              Temp_Echo_arr[2] = Temp_max / 10;
+  51   2              Temp_Echo_arr[3] = Temp_max % 10;
+  52   2          }
+  53   1          else{
+  54   2              Temp_Echo_arr[2] = 17;
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       03/04/2026 22:47:31 PAGE 2   
+
+  55   2              Temp_Echo_arr[3] = Temp_max;
+  56   2          }
+  57   1          
+  58   1          if(Temp_Average >= 100){
+  59   2              Temp_Echo_arr[5] = Temp_Average / 100;
+  60   2              Temp_Echo_arr[6] = Temp_Average % 100 / 10;
+  61   2              Temp_Echo_arr[7] = Temp_Average % 10;
+  62   2          }
+  63   1          else if(Temp_Average >= 10 && Temp_Average < 100){
+  64   2              Temp_Echo_arr[5] = 17;
+  65   2              Temp_Echo_arr[6] = Temp_Average / 10;
+  66   2              Temp_Echo_arr[7] = Temp_Average % 10;
+  67   2          }
+  68   1          else{
+  69   2              Temp_Echo_arr[5] = 17;
+  70   2              Temp_Echo_arr[6] = 0;
+  71   2              Temp_Echo_arr[7] = Temp_Average;
+  72   2          }
+  73   1      }
+  74          
+  75          void Humidity_Echo_Display(){
+  76   1          if(NE555_max >= 10){
+  77   2              Humidity_Echo_arr[2] = NE555_max / 10;
+  78   2              Humidity_Echo_arr[3] = NE555_max % 10;
+  79   2          }
+  80   1          else{
+  81   2              Humidity_Echo_arr[2] = 17;
+  82   2              Humidity_Echo_arr[3] = NE555_max;
+  83   2          }
+  84   1      
+  85   1          if(NE555_Average >= 100){
+  86   2              Humidity_Echo_arr[5] = NE555_Average / 100;
+  87   2              Humidity_Echo_arr[6] = NE555_Average % 100 / 10;
+  88   2              Humidity_Echo_arr[7] = NE555_Average % 10;
+  89   2          }
+  90   1          else if(NE555_Average >= 10 && NE555_Average < 100){
+  91   2              Humidity_Echo_arr[5] = 17;
+  92   2              Humidity_Echo_arr[6] = NE555_Average / 10;
+  93   2              Humidity_Echo_arr[7] = NE555_Average % 10;
+  94   2          }
+  95   1          else{
+  96   2              Humidity_Echo_arr[5] = 17;
+  97   2              Humidity_Echo_arr[6] = 0;
+  98   2              Humidity_Echo_arr[7] = NE555_Average;
+  99   2          }
+ 100   1      }
+ 101          
+ 102          void Time_Echo_Display(){
+ 103   1          Time_Echo_arr[1] = Time_num / 10;
+ 104   1          Time_Echo_arr[2] = Time_num % 10;
+ 105   1          Time_Echo_arr[3] = Time_dat[0];
+ 106   1          Time_Echo_arr[4] = Time_dat[1];
+ 107   1          Time_Echo_arr[6] = Time_dat[2];
+ 108   1          Time_Echo_arr[7] = Time_dat[3];
+ 109   1      }
+ 110          
+ 111          void Parameter_Display(){
+ 112   1          if(Temp_dat >= 10){
+ 113   2              Parameter_dat_arr[6] = Temp_dat / 10;
+ 114   2              Parameter_dat_arr[7] = Temp_dat % 10;
+ 115   2          }
+ 116   1          else{
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       03/04/2026 22:47:31 PAGE 3   
+
+ 117   2              Parameter_dat_arr[6] = 17;
+ 118   2              Parameter_dat_arr[7] = Temp_dat;
+ 119   2          }
+ 120   1      }
+ 121          
+ 122          void Temp_Humidity_Display(){
+ 123   1          Temp_Humidity_arr[3] = Temp_value / 100;
+ 124   1          Temp_Humidity_arr[4] = Temp_value % 100 / 10;
+ 125   1          Temp_Humidity_arr[6] = NE555_value / 100;
+ 126   1          Temp_Humidity_arr[7] = NE555_value % 100 / 10;
+ 127   1          if(NE555_value < 200 || NE555_value > 2000){
+ 128   2              Temp_Humidity_arr[6] = 16;
+ 129   2              Temp_Humidity_arr[7] = 16;
+ 130   2          }
+ 131   1      }
+ 132          
+ 133          void LED_Display_Choose(){
+ 134   1          unsigned int S4 = S4_cnt % 3;
+ 135   1          unsigned int S5 = S5_cnt % 3;
+ 136   1          unsigned char i;
+ 137   1          
+ 138   1          if(Collect_Flag == 1){  
+ 139   2              LED_Display_flag = 1;
+ 140   2              LED_Display_cnt = 0;  
+ 141   2              Collect_Flag = 0;   
+ 142   2          }
+ 143   1          
+ 144   1          if(LED_Display_flag){
+ 145   2              Temp_Humidity_Display();
+ 146   2              for(i = 0;i < 8;i++){
+ 147   3                  LED_Display_arr[i] = Temp_Humidity_arr[i];
+ 148   3              }
+ 149   2              if(LED_Display_cnt >= 3000){
+ 150   3                  LED_Display_flag = 0;
+ 151   3                  LED_Display_cnt = 0;
+ 152   3              } 
+ 153   2          }
+ 154   1          switch(S4){
+ 155   2              case 0:
+ 156   2                  Time_Display();
+ 157   2                  for(i = 0;i < 8;i++){
+ 158   3                      LED_Display_arr[i] = Time_dat_arr[i];
+ 159   3                  }
+ 160   2                  break;
+ 161   2              case 1:
+ 162   2                  switch(S5){
+ 163   3                      case 0:
+ 164   3                          Temp_Echo_Display();
+ 165   3                          for(i = 0;i < 8;i++){
+ 166   4                              LED_Display_arr[i] = Temp_Echo_arr[i];
+ 167   4                          }
+ 168   3                          break;
+ 169   3                      case 1:
+ 170   3                          Humidity_Echo_Display();
+ 171   3                          for(i = 0;i < 8;i++){
+ 172   4                              LED_Display_arr[i] = Humidity_Echo_arr[i];
+ 173   4                          }
+ 174   3                          break;
+ 175   3                      case 2:
+ 176   3                          Time_Echo_Display();
+ 177   3                          for(i = 0;i < 8;i++){
+ 178   4                              LED_Display_arr[i] = Time_Echo_arr[i];
+C51 COMPILER V9.60.7.0   LED_DISPLAY                                                       03/04/2026 22:47:31 PAGE 4   
+
+ 179   4                          }
+ 180   3                          break;
+ 181   3                  }
+ 182   2                  break;
+ 183   2              case 2:
+ 184   2                  Parameter_Display();
+ 185   2                  for(i = 0;i < 8;i++){
+ 186   3                      LED_Display_arr[i] = Parameter_dat_arr[i];
+ 187   3                  }
+ 188   2                  break;
+ 189   2          }
+ 190   1      }
+ 191          
+ 192          void LED_Display_Show(){
+ 193   1          unsigned char com;
+ 194   1          unsigned char dat;
+ 195   1          for(com = 0;com < 8;com++){
+ 196   2              SEG(0xFF);
+ 197   2              COM(1<<com);
+ 198   2              dat = SEG_Table[LED_Display_arr[com]];
+ 199   2              if(S4_cnt % 3 == 1 && com == 6){
+ 200   3                  if(S5_cnt % 3 == 0 || S5_cnt % 3 == 1){
+ 201   4                      dat &= 0x7F;
+ 202   4                  }
+ 203   3              }
+ 204   2              SEG(dat);
+ 205   2              Delay50us();
+ 206   2          }
+ 207   1          SEG(0xFF);
+ 208   1          COM(0xFF);
+ 209   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1000    ----
+   CONSTANT SIZE    =     18    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     56       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,5 @@
+#ifndef KEY_H
+#define KEY_H
+extern unsigned char S4_cnt;
+void Key_login();
+#endif // !KEY_H

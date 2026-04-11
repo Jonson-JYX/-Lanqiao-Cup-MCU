@@ -1,0 +1,46 @@
+C51 COMPILER V9.60.7.0   DS18B20                                                           04/05/2026 15:59:13 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DS18B20
+OBJECT MODULE PLACED IN .\Objects\DS18B20.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE DS18B20.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\D
+                    -S18B20.lst) OBJECT(.\Objects\DS18B20.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+   2          #include "Onewire.h"
+   3          #include "Sound.h"
+   4          #include "Timer.h"
+*** ERROR C141 IN LINE 3 OF Timer.h: syntax error near ';', expected 'hdata'
+   5          #include "PCF8591.h"
+   6          
+   7          unsigned int Temp_value = 0;   //温度值
+   8          
+   9          unsigned int Read_Temp(){
+  10   1          unsigned int temp;
+  11   1          unsigned char high,low;
+  12   1          init_ds18b20();
+  13   1          Write_DS18B20(0xCC);
+  14   1          Write_DS18B20(0x44);
+  15   1          Delay_OneWire(800);
+  16   1          init_ds18b20();
+  17   1          Write_DS18B20(0xCC);
+  18   1          Write_DS18B20(0xBE);
+  19   1          low = Read_DS18B20();
+  20   1          high = Read_DS18B20();
+  21   1          temp = (high << 8) + low;
+  22   1          return temp * 0.0625f;   
+  23   1      }
+  24          
+  25          void Temp_login(){
+  26   1          if(Temp_cnt >= 200){
+  27   2              Temp_value = Read_Temp();
+  28   2              Sound_speed = (unsigned int)(330.0 + 0.6 * (float)Temp_value);
+  29   2              RB2_VC = (unsigned int)(0.04 * (float)Temp_value * (float)Temp_value - 10.0 * (float)Temp_value + 
+             -255.0);
+  30   2              Temp_cnt = 0;
+  31   2          }
+  32   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  1 ERROR(S)
